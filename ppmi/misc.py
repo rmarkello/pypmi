@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+"""
+Miscellaneous functions for working with derived PPMI data
+"""
 import numpy as np
 import pandas as pd
 import scipy.stats

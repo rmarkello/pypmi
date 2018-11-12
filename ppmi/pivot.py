@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+"""
+Functions for converting long-form PPMI data into wide-form PPMI data
+"""
 import pandas as pd
 
 
