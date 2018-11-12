@@ -5,8 +5,12 @@ with heudiconv.
 """
 import pathlib
 from pkg_resources import resource_filename
-import docker
 import pandas as pd
+try:
+    import docker
+    docker_avail = True
+except ImportError:
+    docker_avail = False
 
 # get list of sessions that won't convert for whatever reason
 BAD_SCANS = pd.read_csv(resource_filename('ppmi', 'data/sessions.txt'))
@@ -149,36 +153,56 @@ def convert_ppmi(raw_dir, out_dir, ignore_bad=True):
     Parameters
     ----------
     raw_dir : str or pathlib.Path
+        Path to raw PPMI dataset to be converted to BIDS format
     out_dir : str or pathlib.Path
+        Path to output directory where BIDS-format PPMI dataset should be
+        generated
     ignore_bad : bool, optional
         Whether to ignore "bad" scans (i.e., ones that are known to fail
         conversion or reconstruction)
+
+    Returns
+    -------
+    out_dir : pathlib.Path
+        Generated BIDS dataset
     """
+
+    if not docker_avail:
+        raise ImportError('Docker-py is not available; cannot convert '
+                          'provided dataset without Docker.')
+
+    if isinstance(raw_dir, str):
+        raw_dir = pathlib.Path(raw_dir).resolve()
+    if isinstance(out_dir, str):
+        out_dir = pathlib.Path(out_dir).resolve()
+
+    # generate this, if it doesn't already exist
+    out_dir.mkdir(exist_ok=True)
 
     subjects = _prepare_directory(raw_dir, ignore_bad=ignore_bad)
 
-    # get docker client and pull heudiconv, if necessary
+    # get docker client and pull heudiconv image, if necessary
     client = docker.from_env()
     if len(client.images.list('nipy/heudiconv')) == 0:
         client.images.pull('nipy/heudiconv', tag='latest')
 
-    # run heudiconv over all sessions, 1-5
+    # run heudiconv over all potential sessions
     for session in range(1, 6):
         cli = client.containers.run(
-                  image='nipy/heudiconv',
-                  command=['-d', '/data/{subject}/{session}/*/*dcm',
-                           '-s', ' '.join(subjects),
-                           '-ss', session,
-                           '--outdir', '/out',
-                           '--heuristic', '/heuristic.py',
-                           '--converter', 'dcm2niix',
-                           '--bids',
-                           '--minmeta'],
-                  remove=True,
-                  detach=True,
-                  volumes={str(raw_dir): {'bind': '/data', 'mode': 'ro'},
-                           str(out_dir): {'bind': '/out', 'mode': 'rw'},
-                           HEURISTIC: {'bind': '/heuristic.py', 'mode': 'ro'}}
+            image='nipy/heudiconv',
+            command=['-d', '/data/{subject}/{session}/*/*dcm',
+                     '-s', ' '.join(subjects),
+                     '-ss', session,
+                     '--outdir', '/out',
+                     '--heuristic', '/heuristic.py',
+                     '--converter', 'dcm2niix',
+                     '--bids',
+                     '--minmeta'],
+            remove=True,
+            detach=True,
+            volumes={str(raw_dir): {'bind': '/data', 'mode': 'ro'},
+                     str(out_dir): {'bind': '/out', 'mode': 'rw'},
+                     HEURISTIC: {'bind': '/heuristic.py', 'mode': 'ro'}}
         )
         for log in cli.logs(stream=True):
             print(log.decode(), end='')
