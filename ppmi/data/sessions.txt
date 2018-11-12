@@ -1,0 +1,112 @@
+subject,session,scan,issue,program
+3000,1,S102118,IntersliceDistance varies,dcm2niix
+3002,1,S102130,IntersliceDistance varies,dcm2niix
+3003,1,S107220,IntersliceDistance varies,dcm2niix
+3016,1,S153795,IntersliceDistance varies,dcm2niix
+3016,1,S153796,IntersliceDistance varies,dcm2niix
+3071,1,S135401,IntersliceDistance varies,dcm2niix
+3074,1,S135405,IntersliceDistance varies,dcm2niix
+3075,1,S190588,IntersliceDistance varies,dcm2niix
+3075,1,S190589,StackID undefined,heudiconv
+3126,4,S510954,IntersliceDistance varies,dcm2niix
+3126,4,S510955,StudyUID varies,heudiconv
+3126,4,S510956,StudyUID varies,heudiconv
+3211,1,S187823,DICOM standard violation,dcm2niix
+3211,1,S187824,DICOM standard violation,dcm2niix
+3224,1,S189267,ProtocolName undefined,heudiconv
+3224,1,S189268,ProtocolName undefined,heudiconv
+3224,1,S189269,ProtocolName undefined,heudiconv
+3224,1,S189270,ProtocolName undefined,heudiconv
+3227,1,S189271,ProtocolName undefined,heudiconv
+3227,1,S189272,ProtocolName undefined,heudiconv
+3227,1,S189273,ProtocolName undefined,heudiconv
+3229,1,S189274,ProtocolName undefined,heudiconv
+3229,1,S189275,ProtocolName undefined,heudiconv
+3229,1,S189276,ProtocolName undefined,heudiconv
+3229,1,S189277,ProtocolName undefined,heudiconv
+3230,1,S189278,ProtocolName undefined,heudiconv
+3230,1,S189279,ProtocolName undefined,heudiconv
+3230,1,S189280,ProtocolName undefined,heudiconv
+3230,1,S189281,ProtocolName undefined,heudiconv
+3232,1,S186527,DICOM standard violation,dcm2niix
+3232,1,S186528,DICOM standard violation,dcm2niix
+3232,1,S186529,DICOM standard violation,dcm2niix
+3233,1,S186530,DICOM standard violation,dcm2niix
+3233,1,S186531,DICOM standard violation,dcm2niix
+3233,1,S186532,DICOM standard violation,dcm2niix
+3281,1,S148905,IntersliceDistance varies,dcm2niix
+3407,1,S110162,ProtocolName undefined,heudiconv
+3407,1,S110163,ProtocolName undefined,heudiconv
+3407,1,S110164,ProtocolName undefined,heudiconv
+3419,1,S110180,ProtocolName undefined,heudiconv
+3419,1,S110181,ProtocolName undefined,heudiconv
+3419,1,S110182,ProtocolName undefined,heudiconv
+3432,1,S139723,ProtocolName undefined,heudiconv
+3432,1,S139724,ProtocolName undefined,heudiconv
+3432,1,S139725,ProtocolName undefined,heudiconv
+3428,1,S187826,StudyUID varies,heudiconv
+3428,1,S187827,StudyUID varies,heudiconv
+3540,1,S183681,StackID undefined,heudiconv
+3540,1,S183682,StackID undefined,heudiconv
+3540,1,S183683,StackID undefined,heudiconv
+3542,1,S183684,StackID undefined,heudiconv
+3542,1,S183685,StackID undefined,heudiconv
+3542,1,S183686,StackID undefined,heudiconv
+3544,1,S183687,StackID undefined,heudiconv
+3544,1,S183688,StackID undefined,heudiconv
+3544,1,S183689,StackID undefined,heudiconv
+3563,3,S304189,StudyUID varies,heudiconv
+3593,4,S575537,Orientation varies,dcm2niix
+3593,4,S575538,Orientation varies,dcm2niix
+3593,4,S575539,StudyUID varies,heudiconv
+3593,4,S575540,StudyUID varies,heudiconv
+3593,4,S575541,StudyUID varies,heudiconv
+3593,4,S575542,StudyUID varies,heudiconv
+3613,1,S117981,StackID undefined,heudiconv
+3613,1,S117982,StackID undefined,heudiconv
+3613,1,S117983,StackID undefined,heudiconv
+3613,1,S117984,StackID undefined,heudiconv
+3756,1,S131526,IntersliceDistance varies,dcm2niix
+3756,1,S131528,IntersliceDistance varies,dcm2niix
+3758,1,S139319,IntersliceDistance varies,dcm2niix
+3760,1,S142620,IntersliceDistance varies,dcm2niix
+3763,1,S142675,IntersliceDistance varies,dcm2niix
+3765,1,S142701,IntersliceDistance varies,dcm2niix
+3768,1,S148984,IntersliceDistance varies,dcm2niix
+3775,1,S169368,IntersliceDistance varies,dcm2niix
+3778,1,S160413,IntersliceDistance varies,dcm2niix
+3778,4,S467590,StudyUID varies,heudiconv
+3780,1,S185630,IntersliceDistance varies,dcm2niix
+3818,2,S196352,IntersliceDistance varies,dcm2niix
+3851,2,S171235,StudyUID varies,heudiconv
+3856,1,S193065,ProtocolName undefined,heudiconv
+3856,1,S193066,ProtocolName undefined,heudiconv
+3856,1,S193067,ProtocolName undefined,heudiconv
+3858,1,S193642,ProtocolName undefined,heudiconv
+3858,1,S193644,Identical image tags,dcm2niix
+3858,1,S193645,Identical image tags,dcm2niix
+3858,1,S193646,StudyUID varies,heudiconv
+3858,1,S193647,StudyUID varies,heudiconv
+3859,1,S193648,ProtocolName undefined,heudiconv
+3859,1,S193649,ProtocolName undefined,heudiconv
+3859,1,S193650,Identical image tags,dcm2niix
+3859,1,S193651,ProtocolName undefined,heudiconv
+3859,1,S193652,Identical image tags,dcm2niix
+3866,3,S250437,SeriesNumber varies,dcm2niix
+3866,3,S250438,SeriesNumber varies,dcm2niix
+3866,3,S250439,SeriesNumber varies,dcm2niix
+3866,3,S250440,SeriesNumber varies,dcm2niix
+3869,1,S277104,SeriesNumber varies,dcm2niix
+3869,1,S311526,SeriesNumber varies,dcm2niix
+3869,1,S311527,SeriesNumber varies,dcm2niix
+3869,1,S311529,SeriesNumber varies,dcm2niix
+3869,3,S248510,SeriesNumber varies,dcm2niix
+3869,3,S248511,SeriesNumber varies,dcm2niix
+3869,3,S248512,SeriesNumber varies,dcm2niix
+3869,3,S248514,SeriesNumber varies,dcm2niix
+3963,1,S184915,StackID undefined,heudiconv
+3963,1,S184916,StackID undefined,heudiconv
+3963,1,S184917,StackID undefined,heudiconv
+3963,1,S184918,StackID undefined,heudiconv
+4073,1,S190712,IntersliceDistance varies,dcm2niix
+4073,1,S190717,IntersliceDistance varies,dcm2niix

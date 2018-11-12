@@ -1,0 +1,11 @@
+*pyc
+__pycache__/
+.coverage
+.cache/
+*.egg-info/
+.pytest_cache/
+.vscode/
+_build/
+_static/
+build/
+dist/
