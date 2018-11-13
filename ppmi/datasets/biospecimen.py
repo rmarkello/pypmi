@@ -37,7 +37,7 @@ def get_data(fpath):
                  TESTNAME=str,
                  TESTVALUE=str)
 
-    fname = op.join(fpath, 'Biospecimen_Analysis_Results.csv')
+    fname = op.join(fpath, 'Current_Biospecimen_Analysis_Results.csv')
     data = pd.read_csv(fname, dtype=dtype)
 
     data['TESTVALUE'] = pd.to_numeric(data.TESTVALUE, errors='coerce')

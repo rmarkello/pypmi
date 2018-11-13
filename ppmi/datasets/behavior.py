@@ -117,7 +117,7 @@ BEHAVIORAL_INFO = {
             'MDS_UPDRS_Part_II__Patient_Questionnaire.csv': [
                 ['NP2WALK', 'NP2FREZ']
             ],
-            'MDS_UPDRS_Part_III__Post_Dose_.csv': [
+            'MDS_UPDRS_Part_III.csv': [
                 ['NP3GAIT', 'NP3FRZGT', 'NP3PSTBL']
             ]
         },
@@ -233,7 +233,7 @@ BEHAVIORAL_INFO = {
             'MDS_UPDRS_Part_II__Patient_Questionnaire.csv': [
                 ['NP2TRMR']
             ],
-            'MDS_UPDRS_Part_III__Post_Dose_.csv': [
+            'MDS_UPDRS_Part_III.csv': [
                 ['NP3PTRMR', 'NP3PTRML', 'NP3KTRMR', 'NP3KTRML', 'NP3RTARU',
                  'NP3RTALU', 'NP3RTARL', 'NP3RTALL', 'NP3RTALJ', 'NP3RTCON']
             ]
@@ -269,7 +269,7 @@ BEHAVIORAL_INFO = {
     },
     'UPDRS III': {
         'files': {
-            'MDS_UPDRS_Part_III__Post_Dose_.csv': [
+            'MDS_UPDRS_Part_III.csv': [
                 ['NP3SPCH', 'NP3FACXP', 'NP3RIGN', 'NP3RIGRU', 'NP3RIGLU',
                  'PN3RIGRL', 'NP3RIGLL', 'NP3FTAPR', 'NP3FTAPL', 'NP3HMOVR',
                  'NP3HMOVL', 'NP3PRSPR', 'NP3PRSPL', 'NP3TTAPR', 'NP3TTAPL',
