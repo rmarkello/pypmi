@@ -378,7 +378,7 @@ def get_adj_moca(df):
     mocaadj = mocaadj.append(mocanoadj, sort=True)
     mocaadj.TEST = 'MOCA'
 
-    new_df = df.append(mocaadj, sort=True)
+    new_df = df.append(mocaadj, sort=True, ignore_index=True)
     to_drop = new_df.query('TEST == "EDUCYRS" | TEST == "MOCA Unadjusted"')
     data = new_df.drop(to_drop.index, axis=0)
 

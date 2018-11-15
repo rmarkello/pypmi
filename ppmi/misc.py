@@ -37,8 +37,8 @@ def get_slopes(data):
 
     Parameters
     ----------
-    fname : str
-        Filepath to behavioral data file
+    data : pandas.DataFrame
+        DataFrame as obtained by e.g., `ppmi.get_all_data()`
 
     Returns
     -------
@@ -49,14 +49,14 @@ def get_slopes(data):
     def get_slopes(df):
         if len(df) < 2:
             return np.nan
-        x = df.VISIT_DATE.map(lambda x: x.toordinal()).get_values() / 365
+        x = df.AGE.get_values()
         y = df.SCORE.get_values()
         return scipy.stats.linregress(x, y)[0]
 
     def get_duration(df):
         if len(df) < 2:
             return np.nan
-        x = df.VISIT_DATE.map(lambda x: x.toordinal()).get_values() / 365
+        x = df.AGE.get_values()
         return x[-1] - x[0]
 
     # load data, get rid of null visits and post-med UPDRS III
@@ -67,17 +67,14 @@ def get_slopes(data):
     slope_df = pd.DataFrame(columns=columns)
     for test in data.TEST.unique():
         gb = (data.query(f'TEST == "{test}"')
-                  .get(['PARTICIPANT', 'VISIT_DATE', 'SCORE'])
-                  .groupby(['PARTICIPANT', 'VISIT_DATE'])
-                  .mean()
-                  .reset_index()
+                  .get(['PARTICIPANT', 'AGE', 'SCORE'])
                   .groupby('PARTICIPANT'))
         slope = (gb.apply(get_slopes)
                    .reset_index())
         slope.columns = ['PARTICIPANT', 'SLOPE']
         slope['TEST'] = test
         slope['VISITS'] = (gb.count()
-                             .get('VISIT_DATE')
+                             .get('AGE')
                              .get_values()
                              .astype(int))
         slope['DURATION'] = (gb.apply(get_duration)
