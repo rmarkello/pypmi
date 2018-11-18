@@ -46,39 +46,31 @@ def get_slopes(data):
         DataFrame with all clinical-behavioral trajectories (i.e., slopes)
     """
 
-    def get_slopes(df):
+    def get_fit(df):
+        # if there are duplicate entries from the same visit, use average
+        df = df.groupby('VISIT').mean()
         if len(df) < 2:
-            return np.nan
+            return np.nan, np.nan, np.nan
         x = df.AGE.get_values()
         y = df.SCORE.get_values()
-        return scipy.stats.linregress(x, y)[0]
-
-    def get_duration(df):
-        if len(df) < 2:
-            return np.nan
-        x = df.AGE.get_values()
-        return x[-1] - x[0]
+        duration = x[-1] - x[0]
+        fit = scipy.stats.linregress(x, y)
+        return fit.slope, fit.stderr, duration
 
     # load data, get rid of null visits and post-med UPDRS III
     data = (data.dropna(subset=['VISIT', 'VISIT_DATE'])
                 .query('PAG_NAME != "NUPDRS3A"'))
 
-    columns = ['PARTICIPANT', 'TEST', 'SLOPE', 'VISITS', 'DURATION']
+    columns = ['PARTICIPANT', 'TEST', 'SLOPE', 'STDERR', 'VISITS', 'DURATION']
     slope_df = pd.DataFrame(columns=columns)
     for test in data.TEST.unique():
         gb = (data.query(f'TEST == "{test}"')
-                  .get(['PARTICIPANT', 'AGE', 'SCORE'])
+                  .get(['PARTICIPANT', 'AGE', 'SCORE', 'VISIT'])
                   .groupby('PARTICIPANT'))
-        slope = (gb.apply(get_slopes)
-                   .reset_index())
-        slope.columns = ['PARTICIPANT', 'SLOPE']
+        slope = gb.apply(get_fit).apply(pd.Series).reset_index()
+        slope.columns = ['PARTICIPANT', 'SLOPE', 'STDERR', 'DURATION']
         slope['TEST'] = test
-        slope['VISITS'] = (gb.count()
-                             .get('AGE')
-                             .get_values()
-                             .astype(int))
-        slope['DURATION'] = (gb.apply(get_duration)
-                               .get_values())
+        slope['VISITS'] = gb.count().get('AGE').get_values().astype(int)
 
         slope_df = slope_df.append(slope, ignore_index=True, sort=True)
 
