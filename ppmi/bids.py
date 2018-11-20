@@ -46,8 +46,8 @@ def _prepare_subject(subj_dir, timeout=None):
     prev = len([f for f in subj_dir.glob('*') if f.name.isdigit()])
 
     # get all sessions for subject (session = same day)
-    sessions = sorted(set([v.name[:7] for v in
-                           subj_dir.rglob('????-??-??_??_??_??.?')]))
+    sessions = [v.name[:7] for v in subj_dir.rglob('????-??-??_??_??_??.?')]
+    sessions = sorted(set(sessions))
 
     # iterate through sessions and copy scans to uniform directory structure
     for n, ses in enumerate(sessions, prev + 1):
@@ -147,8 +147,9 @@ def convert_ppmi(raw_dir, out_dir, ignore_bad=True):
     The PPMI dataset `raw_dir` should consistent of DICOM images obtained from
     http://www.ppmi-info.org/access-data-specimens/download-data/ and
     unzipped into a single directory. This function will prepare this dataset
-    to be converted with ``heudiconv`` into BIDS format. You must have Docker
-    installed on your system for this function to work!
+    to be converted with ``heudiconv`` into BIDS format.
+
+    You must have Docker installed on your system for this function to work!
 
     Parameters
     ----------
@@ -159,7 +160,7 @@ def convert_ppmi(raw_dir, out_dir, ignore_bad=True):
         generated
     ignore_bad : bool, optional
         Whether to ignore "bad" scans (i.e., ones that are known to fail
-        conversion or reconstruction)
+        conversion or reconstruction). Default: True
 
     Returns
     -------

@@ -7,7 +7,7 @@ data into BIDS format.
 import os
 import logging
 
-lgr = logging.getLogger()
+lgr = logging.getLogger(__name__)
 scaninfo_suffix = '.json'
 
 T1w_SERIES = [
@@ -206,31 +206,23 @@ def infotodict(seqinfo):
 
     # {bids_subject_session_dir} : "sub-X/ses-Y"
     # {bids_subject_session_prefix} : "sub-X_ses-Y"
-    t1w = create_key(
-        '{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_T1w'  # noqa
-    )
-    t2w = create_key(
-        '{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_T2w'  # noqa
-    )
-    pd = create_key(
-        '{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_PD'  # noqa
-    )
-    pdt2 = create_key(
-        '{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_PDT2'  # noqa
-    )
-    flair = create_key(
-        '{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_FLAIR'  # noqa
-    )
-    bold = create_key(
-        '{bids_subject_session_dir}/func/{bids_subject_session_prefix}_task-rest_run-{item:02d}_bold'  # noqa
-    )
-    dti = create_key(
-        '{bids_subject_session_dir}/dwi/{bids_subject_session_prefix}_run-{item:02d}_dwi'  # noqa
-    )
+    t1w = create_key('{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_T1w')  # noqa
+    t1w_grappa = create_key('{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_acq-grappa2_run-{item:02d}_T1w')  # noqa
+    t1w_adni = create_key('{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_acq-adni_run-{item:02d}_T1w')  # noqa
+    t2w = create_key('{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_T2w')  # noqa
+    pd = create_key('{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_PD')  # noqa
+    pdt2 = create_key('{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_PDT2')  # noqa
+    flair = create_key('{bids_subject_session_dir}/anat/{bids_subject_session_prefix}_run-{item:02d}_FLAIR')  # noqa
+    bold = create_key('{bids_subject_session_dir}/func/{bids_subject_session_prefix}_task-rest_run-{item:02d}_bold')  # noqa
+    dti = create_key('{bids_subject_session_dir}/dwi/{bids_subject_session_prefix}_run-{item:02d}_dwi')  # noqa
 
-    info = {t1w: [], t2w: [], pd: [], pdt2: [], flair: [], bold: [], dti: []}
+    info = {t1w: [], t1w_grappa: [], t1w_adni: [],
+            t2w: [], pd: [], pdt2: [], flair: [], bold: [], dti: []}
+    revlookup = {}
 
     for s in seqinfo:
+        revlookup[s.series_id] = s.series_description
+
         # the straightforward scan series
         if s.series_description in T1w_SERIES:
             info[t1w].append(s.series_id)
@@ -253,6 +245,21 @@ def infotodict(seqinfo):
                 info[t2w].append(s.series_id)
             else:
                 info[pdt2].append(s.series_id)
+
+    # if we have multiple t1w runs we want to add an "acq" tag to some of them
+    if len(info[t1w]) > 1:
+        # copy out t1w image series ids and reset info[t1w]
+        all_t1w = info[t1w].copy()
+        info[t1w] = []
+
+        for series_id in all_t1w:
+            series_description = revlookup[series_id].lower()
+            if series_description in ['mprage_grappa', 'sag_mprage_grappa']:
+                info[t1w].append(series_id)
+            elif 'adni' in series_description:
+                info[t1w_adni].append(series_id)
+            else:
+                info[t1w_grappa].append(series_id)
 
     return info
 
@@ -288,7 +295,8 @@ def custom_callable(*args):
     outtype = outtypes[0]
     opts = get_parser().parse_args()
 
-    # if you don't want BIDS format then you shouldn't mind multiple outputs...
+    # if you don't want BIDS format then you're going to have to rename outputs
+    # on your own!
     if not opts.bids:
         return
 
@@ -299,10 +307,10 @@ def custom_callable(*args):
     if len(res_files) < 2:
         return
 
-    # there are few a sequences with some weird shitty shit that causes >2
-    # files to be generated, some of which are two-dimensional
-    # we...don't want that, because that's nonsense, so let's design a check
-    # for 2D files and just remove without regard
+    # there are few a sequences with some weird stuff that causes >2
+    # files to be generated, some of which are two-dimensional (one slice)
+    # we don't want that because that's nonsense, so let's design a check
+    # for 2D files and just remove them
     for fname in res_files:
         if len([f for f in nib.load(fname).shape if f > 1]) < 3:
             os.remove(fname)
@@ -326,7 +334,7 @@ def custom_callable(*args):
     for echo, (nifti, json) in zip(echonums, bids_pairs):
         # create new prefix with echo specifier
         # this isn't *technically* BIDS compliant, yet, but we're making due...
-        split = re.search(r'run-(\d+)_', prefix).end()
+        split = re.search('run-(\d+)_', prefix).end()
         new_prefix = (prefix[:split] +
                       'echo-%d_' % echo +
                       prefix[split:])
@@ -383,7 +391,7 @@ def isclose(a, b, rel_tol=1e-06, abs_tol=0.0):
     smaller than at least one of the tolerances.
     """
 
-    return abs(a-b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
+    return abs(a - b) <= max(rel_tol * max(abs(a), abs(b)), abs_tol)
 
 
 def safe_movefile(src, dest, overwrite=False):
