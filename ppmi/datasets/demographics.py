@@ -175,8 +175,8 @@ def get_data(fpath):
             temp_scores = data[['PATNO']].astype('str').join(curr_score)
         df = pd.merge(df, temp_scores, on='PATNO', how='outer')
 
-    # drop participants who have NaN for enroll date and rename columns
-    df = df.dropna(subset=['ENROLL_DATE']).rename(columns=RENAME_COLS)
+    # rename columns
+    df = df.rename(columns=RENAME_COLS)
 
     # for some reason there are duplicate participant entries here????
     return df.drop_duplicates(subset=['PARTICIPANT'])
