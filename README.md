@@ -8,8 +8,8 @@ This package requires Python >= 3.5.
 If you have the correct version of Python installed, you can install this package by opening a terminal and running the following:
 
 ```bash
-git clone https://github.com/rmarkello/ppmi.git
-cd ppmi
+git clone https://github.com/rmarkello/pypmi.git
+cd pypmi
 python setup.py install
 ```
 
@@ -23,8 +23,8 @@ Data, made available on the [PPMI website](http://www.ppmi-info.org/data), inclu
 
 While accessing this data is straightforward (researchers must simply sign a data usage agreement and provide information on the purpose of their research), the sheer amount of data made available can be quite overwhelming to work with.
 Thus, the primary goal of this package is to provide a Python interface to making working with the data provided by the PPMI easier.
-Although this project is still very much **under development**, so many of the functions are liable to change without notice, it is neverthless usable!
-Most useful may be the functions contained in `ppmi.datasets`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `ppmi.bids`, which can convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
+While this project is still very much **under development**, it is neverthless functional!
+Most useful may be the functions contained in `ppmi.datasets`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `ppmi.bids`, which helps convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
 
 I hope to continue adding useful features to this package as I keep working with the data, but take a look below at [development and getting involved](#development-and-getting-involved) if you're interested in contributing, yourself!
 
@@ -52,7 +52,7 @@ Index(['PARTICIPANT', 'DIAGNOSIS', 'GENDER', 'RACE', 'AGE', 'FAMILY_HISTORY',
 ```
 
 The call to `ppmi.get_all_data()` may take a few seconds to run&mdash;there's a lot of data to import!
-The `data` object returned is a hybrid [wide/narrow](https://en.wikipedia.org/wiki/Wide_and_narrow_data) format (`pandas.DataFrame`)[https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html], and can be queried in a number of useful ways:
+The `data` object returned is a hybrid [wide/narrow](https://en.wikipedia.org/wiki/Wide_and_narrow_data) format [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html), and can be queried in a number of useful ways:
 
 ```python
 # how many PD participants do we have a MOCA score for at screening?
