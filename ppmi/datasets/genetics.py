@@ -74,11 +74,10 @@ def get_data(fname, gene_list=None):
     data = pd.DataFrame(gen.compute().T, index=participant_id, columns=bim.snp)
     # if multiple columns represent same snp, combine them
     # THEY SHOULD ALL BE THE SAME -- if they aren't, that's bad...
-    data = (data.dropna(axis=1, thresh=1)
+    data = (data.dropna(axis=1, how='all')
                 .groupby(level=0, axis=1)
                 .mean()
-                .dropna(axis=0)
-                .astype(int)
+                .dropna(axis=0, how='all')
                 .sort_index())
     # flip reverse-coded SNPs
     data[flip] = data[flip].applymap(lambda x: {0: 2, 1: 1, 2: 0}.get(x))
