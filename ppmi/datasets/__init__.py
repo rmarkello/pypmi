@@ -1,6 +1,6 @@
 __all__ = [
     'get_all', 'get_behavior', 'get_biospecimen', 'get_datscan',
-    'get_demographics', 'get_genetics'
+    'get_demographics', 'get_genetics',
 ]
 
 from .all import get_data as get_all

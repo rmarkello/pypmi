@@ -6,12 +6,15 @@ import os.path as op
 import pandas as pd
 import numpy as np
 
-RENAME_COLS = dict(PATNO='PARTICIPANT',
-                   INFODT='VISIT_DATE',
-                   EVENT_ID='VISIT')
-RETAIN_COLS = ['PARTICIPANT', 'PAG_NAME', 'VISIT',
-               'VISIT_DATE', 'TEST', 'SCORE']
-EXTRA = ['PATNO', 'EVENT_ID', 'PAG_NAME', 'INFODT']
+RENAME_COLS = dict(
+    PATNO='PARTICIPANT', INFODT='VISIT_DATE', EVENT_ID='VISIT'
+)
+RETAIN_COLS = [
+    'PARTICIPANT', 'PAG_NAME', 'VISIT', 'VISIT_DATE', 'TEST', 'SCORE'
+]
+EXTRA = [
+    'PATNO', 'EVENT_ID', 'PAG_NAME', 'INFODT'
+]
 APPLYMAP = itertools.repeat(lambda x: x)
 OPERATION = itertools.repeat(np.sum)
 
@@ -296,6 +299,12 @@ BEHAVIORAL_INFO = {
         }
     }
 }
+
+
+def available_measures():
+    """ Lists available clinical-behavioral composite measures """
+    # we probably shouldn't return MOCA Unadjusted since we drop it but /shrug
+    return list(BEHAVIORAL_INFO.keys()) + ['MOCA']
 
 
 def get_data(fpath):

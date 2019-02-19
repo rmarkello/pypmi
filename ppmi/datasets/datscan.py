@@ -5,12 +5,15 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import CategoricalDtype as cdtype
 
-RENAME_COLS = dict(PATNO='PARTICIPANT',
-                   EVENT_ID='VISIT')
-ASSIGN_COLS = dict(PAG_NAME='DATSCAN',
-                   VISIT_DATE=np.nan)
-RETAIN_COLS = ['PARTICIPANT', 'PAG_NAME', 'VISIT',
-               'VISIT_DATE', 'TEST', 'SCORE']
+RENAME_COLS = dict(
+    PATNO='PARTICIPANT', EVENT_ID='VISIT'
+)
+ASSIGN_COLS = dict(
+    PAG_NAME='DATSCAN', VISIT_DATE=np.nan
+)
+RETAIN_COLS = [
+    'PARTICIPANT', 'PAG_NAME', 'VISIT', 'VISIT_DATE', 'TEST', 'SCORE'
+]
 
 
 def get_data(fpath):

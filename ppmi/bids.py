@@ -6,11 +6,6 @@ with heudiconv.
 import pathlib
 from pkg_resources import resource_filename
 import pandas as pd
-try:
-    import docker
-    docker_avail = True
-except ImportError:
-    docker_avail = False
 
 # get list of sessions that won't convert for whatever reason
 BAD_SCANS = pd.read_csv(resource_filename('ppmi', 'data/sessions.txt'))
@@ -88,7 +83,7 @@ def _prepare_directory(data_dir, ignore_bad=True):
     Reorganizes PPMI `data_dir` to a structure compatible with ``heudiconv``
 
     PPMI data starts off with a sub-directory structure that is not conducive
-    to use with ```heudiconv``. By default, scans are grouped by scan type
+    to use with ``heudiconv``. By default, scans are grouped by scan type
     rather than by session, and there are a number of redundant sub-directories
     that we don't need. This script reorganizes the data, moving things around
     so that the general hierarchy is {subject}/{session}/{scan}, which makes
@@ -142,14 +137,10 @@ def _prepare_directory(data_dir, ignore_bad=True):
 
 def convert_ppmi(raw_dir, out_dir, ignore_bad=True):
     """
-    Converts PPMI dataset at `raw_dir` to BIDS dataset at `out_dir`
+    Converts PPMI DICOMs in `raw_dir` to BIDS dataset at `out_dir`
 
-    The PPMI dataset `raw_dir` should consistent of DICOM images obtained from
-    http://www.ppmi-info.org/access-data-specimens/download-data/ and
-    unzipped into a single directory. This function will prepare this dataset
-    to be converted with ``heudiconv`` into BIDS format.
-
-    You must have Docker installed on your system for this function to work!
+    Processes data using ``heudiconv``. As such, you must have Docker installed
+    on your system for this function to work
 
     Parameters
     ----------
@@ -166,11 +157,64 @@ def convert_ppmi(raw_dir, out_dir, ignore_bad=True):
     -------
     out_dir : pathlib.Path
         Generated BIDS dataset
+
+    Notes
+    -----
+    The PPMI dataset in `raw_dir` should consistent of DICOM images obtained
+    from http://www.ppmi-info.org/access-data-specimens/download-data/ and
+    unzipped into a single directory. The structure should look something like:
+
+    └── PPMI/
+        ├── SUB-1/
+        |   ├── SCAN-TYPE-1/                      (e.g., MPRAGE_GRAPPA)
+        |   |   ├── SCAN-DATETIME-1/
+        |   |   |   └── SCAN-SERIES-1/
+        |   |   |       └── *dcm
+        |   |   └── SCAN-DATETIME-2/
+        |   ├── SCAN-TYPE-2/                      (e.g., AX_FLAIR)
+        |   |   ├── SCAN-DATETIME-1/
+        |   |   |   └── SCAN-SERIES-2/
+        |   |   |       └── *dcm
+        |   |   └── SCAN-DATETIME-2/
+        |   ├── .../
+        |   └── SCAN-TYPE-N/
+        ├── SUB-2/
+        ├── .../
+        └── SUB-N/
+
+    Where `SUB-N` are PPMI subject numbers, `SCAN-DATETIME-N` are timestamps of
+    the format YYYY-MM-DD_HH_MM_SS.0, and `SCAN-SERIES-N` are unique
+    identifiers of the format S######.
+
+    This sub-directory structure is not conducive to use with ``heudiconv``. By
+    default, scans are grouped by scan type rather than by session, and there
+    are a number of redundant sub-directories that we don't need. This function
+    reorganizes the data, moving scans around so that the general hierarchy is
+    {subject}/{session}/{scan}, which makes for a much easier time converting
+    the PPMI dataset into BIDS format.
+
+    An added complication is that a minority of the scans in the PPMI database
+    are "bad" to some degree. For most, it is likely that there was some issue
+    with exporting/uploading the DICOM files. For others, the conversion
+    process we intend to utilize (``heudiconv`` and ``dcm2niix``) fails to
+    appropriately convert the files due to some idiosyncratic reason that could
+    be fixed but we don't have the patience to fix at the current juncture.
+    Nonetheless, these scans need to be removed so that we can run the batch of
+    subjects through ``heudiconv`` without any abrupt failures. By default,
+    these scans are moved to a sub-directory of `raw_dir`; setting `ignore_bad`
+    to False will retain these scans and try to convert them (but be warned!).
+
+    Once re-organization is done the resulting directory is processed with
+    ``heudiconv`` and the converted BIDS dataset is stored in `out_dir`.
     """
 
-    if not docker_avail:
+    try:
+        import docker
+    except ImportError:
         raise ImportError('Docker-py is not available; cannot convert '
-                          'provided dataset without Docker.')
+                          'provided dataset without Docker. Either `pip '
+                          'install docker` or `conda install docker-py` and '
+                          'try again.')
 
     if isinstance(raw_dir, str):
         raw_dir = pathlib.Path(raw_dir).resolve()
@@ -191,14 +235,16 @@ def convert_ppmi(raw_dir, out_dir, ignore_bad=True):
     for session in range(1, 6):
         cli = client.containers.run(
             image='nipy/heudiconv',
-            command=['-d', '/data/{subject}/{session}/*/*dcm',
-                     '-s', ' '.join(subjects),
-                     '-ss', session,
-                     '--outdir', '/out',
-                     '--heuristic', '/heuristic.py',
-                     '--converter', 'dcm2niix',
-                     '--bids',
-                     '--minmeta'],
+            command=[
+                '-d', '/data/{subject}/{session}/*/*dcm',
+                '-s', ' '.join(subjects),
+                '-ss', session,
+                '--outdir', '/out',
+                '--heuristic', '/heuristic.py',
+                '--converter', 'dcm2niix',
+                '--bids',
+                '--minmeta'
+            ],
             remove=True,
             detach=True,
             volumes={str(raw_dir): {'bind': '/data', 'mode': 'ro'},
