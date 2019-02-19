@@ -84,7 +84,7 @@ The PPMI&mdash;a public-private partnership&mdash;is funded by the Michael J. Fo
 
 ## License information
 
-This codebase is licensed under the 3-clause BSD license. 
+This codebase is licensed under the 3-clause BSD license.
 The full license can be found in the [LICENSE](https://github.com/rmarkello/abagen/blob/master/LICENSE) file in the `ppmi` distribution.
 
 All trademarks referenced herein are property of their respective holders.

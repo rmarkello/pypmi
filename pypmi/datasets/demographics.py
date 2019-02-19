@@ -4,9 +4,9 @@ import os.path as op
 import pandas as pd
 import numpy as np
 
-RENAME_COLS = dict(PATNO='PARTICIPANT',
-                   INFODT='VISIT_DATE',
-                   EVENT_ID='VISIT')
+RENAME_COLS = dict(
+    PATNO='PARTICIPANT', INFODT='VISIT_DATE', EVENT_ID='VISIT'
+)
 
 DEMOGRAPHIC_INFO = {
     'DIAGNOSIS': {
