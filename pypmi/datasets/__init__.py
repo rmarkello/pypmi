@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 __all__ = [
     'get_all', 'get_behavior', 'get_biospecimen', 'get_datscan',
     'get_demographics', 'get_genetics', 'available_datasets',
