@@ -12,7 +12,7 @@ def main():
     root_dir = op.dirname(op.abspath(getfile(currentframe())))
 
     ldict = locals()
-    with open(op.join(root_dir, 'ppmi', 'info.py')) as infofile:
+    with open(op.join(root_dir, 'pypmi', 'info.py')) as infofile:
         exec(infofile.read(), globals(), ldict)
 
     # get long description from README
@@ -41,7 +41,7 @@ def main():
         classifiers=ldict['CLASSIFIERS'],
         download_url=DOWNLOAD_URL,
         install_requires=ldict['INSTALL_REQUIRES'],
-        packages=find_packages(exclude=['ppmi/tests']),
+        packages=find_packages(exclude=['pypmi/tests']),
         package_data=ldict['PACKAGE_DATA'],
         tests_require=ldict['TESTS_REQUIRE'],
         extras_require=ldict['EXTRAS_REQUIRE'],
