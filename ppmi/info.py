@@ -1,31 +1,30 @@
-__version__ = '0.0.1'
+# -*- coding: utf-8 -*-
 
-NAME = 'ppmi'
-MAINTAINER = 'Ross Markello'
-EMAIL = 'rossmarkello@gmail.com'
-VERSION = __version__
-LICENSE = 'BSD-3'
-DESCRIPTION = """\
-A toolbox for working with data from the Parkinson's Progression Markers \
-Initiative (PPMI)
-"""
-LONG_DESCRIPTION = 'README.md'
-LONG_DESCRIPTION_CONTENT_TYPE = 'text/markdown'
-URL = 'https://github.com/rmarkello/{name}'.format(name=NAME)
-DOWNLOAD_URL = ('http://github.com/rmarkello/{name}/archive/{ver}.tar.gz'
-                .format(name=NAME, ver=__version__))
+__author__ = 'pypmi developers'
+__copyright__ = 'Copyright 2018, pypmi developers'
+__credits__ = ['Ross Markello']
+__license__ = 'BSD-3'
+__maintainer__ = 'Ross Markello'
+__email__ = 'rossmarkello@gmail.com'
+__status__ = 'Prototype'
+__url__ = 'http://github.com/rmarkello/pypmi'
+__packagename__ = 'pypmi'
+__description__ = ('pypmi is a Python toolbox for working with data from the '
+                   'Parkinson\'s Progression Markers Initiative (PPMI)')
+__longdesc__ = 'README.md'
+__longdesctype__ = 'text/markdown'
+
 
 INSTALL_REQUIRES = [
     'docker',
     'numpy',
-    'pandas>=0.21.0'
+    'pandas>=0.21'
     'scipy',
     'tqdm'
 ]
 
 TESTS_REQUIRE = [
-    'codecov',
-    'pytest',
+    'pytest>=3.6',
     'pytest-cov',
 ]
 

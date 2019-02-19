@@ -1,42 +1,51 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
-import sys
 
 
 def main():
+    import versioneer
+    from io import open
+    import os.path as op
+    from inspect import getfile, currentframe
     from setuptools import setup, find_packages
 
-    if sys.version_info < (3, 5):
-        raise SystemError('You need Python >=3.5 or above to use abagen.')
+    root_dir = op.dirname(op.abspath(getfile(currentframe())))
 
-    # get package information
     ldict = locals()
-    curr_path = os.path.dirname(__file__)
-    with open(os.path.join(curr_path, 'ppmi', 'info.py')) as infofile:
+    with open(op.join(root_dir, 'ppmi', 'info.py')) as infofile:
         exec(infofile.read(), globals(), ldict)
 
     # get long description from README
-    with open(os.path.join(curr_path, ldict['LONG_DESCRIPTION'])) as src:
-        ldict['LONG_DESCRIPTION'] = src.read()
+    with open(op.join(root_dir, ldict['__longdesc__'])) as src:
+        ldict['__longdesc__'] = src.read()
+
+    ldict.setdefault('__version__', versioneer.get_version())
+    ldict.setdefault('__cmdclass__', versioneer.get_cmdclass())
+    DOWNLOAD_URL = (
+        'https://github.com/rmarkello/{name}/archive/{ver}.tar.gz'.format(
+            name=ldict['__packagename__'],
+            ver=ldict['__version__']))
 
     setup(
+        name=ldict['__packagename__'],
+        version=ldict['__version__'],
+        description=ldict['__description__'],
+        long_description=ldict['__longdesc__'],
+        long_description_content_type=ldict['__longdesctype__'],
+        author=ldict['__author__'],
+        author_email=ldict['__email__'],
+        maintainer=ldict['__maintainer__'],
+        maintainer_email=ldict['__email__'],
+        url=ldict['__url__'],
+        license=ldict['__license__'],
         classifiers=ldict['CLASSIFIERS'],
-        description=ldict['DESCRIPTION'],
-        download_url=ldict['DOWNLOAD_URL'],
-        extras_require=ldict['EXTRAS_REQUIRE'],
+        download_url=DOWNLOAD_URL,
         install_requires=ldict['INSTALL_REQUIRES'],
-        license=ldict['LICENSE'],
-        long_description=ldict['LONG_DESCRIPTION'],
-        long_description_content_type=ldict['LONG_DESCRIPTION_CONTENT_TYPE'],
-        maintainer=ldict['MAINTAINER'],
-        maintainer_email=ldict['EMAIL'],
-        name=ldict['NAME'],
         packages=find_packages(exclude=['ppmi/tests']),
         package_data=ldict['PACKAGE_DATA'],
         tests_require=ldict['TESTS_REQUIRE'],
-        url=ldict['URL'],
-        version=ldict['VERSION'],
+        extras_require=ldict['EXTRAS_REQUIRE'],
+        cmdclass=ldict['__cmdclass__']
     )
 
 
