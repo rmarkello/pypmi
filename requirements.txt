@@ -1,5 +1,6 @@
 docker
-numpy>=0.15.0
-pandas>=0.21.0
+numpy>=0.15
+pandas>=0.21
 scipy
+requests
 tqdm

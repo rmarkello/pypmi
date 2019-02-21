@@ -17,8 +17,9 @@ __longdesctype__ = 'text/markdown'
 
 INSTALL_REQUIRES = [
     'docker',
-    'numpy',
+    'numpy>=0.15',
     'pandas>=0.21'
+    'requests',
     'scipy',
     'tqdm'
 ]
@@ -41,7 +42,7 @@ EXTRAS_REQUIRE['all'] = list(
 )
 
 PACKAGE_DATA = {
-    'ppmi': [
+    'pypmi': [
         'data/*'
     ]
 }
