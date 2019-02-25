@@ -17,8 +17,9 @@ __longdesctype__ = 'text/markdown'
 
 INSTALL_REQUIRES = [
     'docker',
-    'numpy',
+    'numpy>=0.15',
     'pandas>=0.21'
+    'requests',
     'scipy',
     'tqdm'
 ]
@@ -31,7 +32,7 @@ TESTS_REQUIRE = [
 EXTRAS_REQUIRE = {
     'doc': [
         'sphinx>=1.2',
-        'sphinx_rt_theme',
+        'sphinx_rtd_theme',
     ],
     'tests': TESTS_REQUIRE,
 }
@@ -41,7 +42,7 @@ EXTRAS_REQUIRE['all'] = list(
 )
 
 PACKAGE_DATA = {
-    'ppmi': [
+    'pypmi': [
         'data/*'
     ]
 }

@@ -8,8 +8,8 @@ from pkg_resources import resource_filename
 import pandas as pd
 
 # get list of sessions that won't convert for whatever reason
-BAD_SCANS = pd.read_csv(resource_filename('ppmi', 'data/sessions.txt'))
-HEURISTIC = resource_filename('ppmi', 'data/heuristic.py')
+BAD_SCANS = pd.read_csv(resource_filename('pypmi', 'data/sessions.txt'))
+HEURISTIC = resource_filename('pypmi', 'data/heuristic.py')
 
 
 def _prepare_subject(subj_dir, timeout=None):

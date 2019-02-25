@@ -334,10 +334,10 @@ def custom_callable(*args):
     for echo, (nifti, json) in zip(echonums, bids_pairs):
         # create new prefix with echo specifier
         # this isn't *technically* BIDS compliant, yet, but we're making due...
-        split = re.search('run-(\d+)_', prefix).end()
-        new_prefix = (prefix[:split] +
-                      'echo-%d_' % echo +
-                      prefix[split:])
+        split = re.search(r'run-(\d+)_', prefix).end()
+        new_prefix = (prefix[:split]
+                      + 'echo-%d_' % echo
+                      + prefix[split:])
         outname, scaninfo = (new_prefix + '.' + outtype,
                              new_prefix + scaninfo_suffix)
 
@@ -416,6 +416,6 @@ def safe_movefile(src, dest, overwrite=False):
         safe_copyfile(src, dest, overwrite)
         os.remove(src)
     except RuntimeError:
-        lgr.warning('Tried moving %s to %s but %s ' % (src, dest, dest) +
-                    'already exists?! Check your outputs to make sure they ' +
-                    'look okay...')
+        lgr.warning('Tried moving %s to %s but %s ' % (src, dest, dest)
+                    + 'already exists?! Check your outputs to make sure they '
+                    + 'look okay...')

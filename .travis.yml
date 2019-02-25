@@ -1,57 +1,55 @@
 language: python
 sudo: false
+dist: xenial
 notifications:
-    email: change
+  email: change
 
 python:
-    - 3.5
-    - 3.6
+  - 3.6.5
+  - 3.7.1
 
 env:
+  matrix:
     - LINTING=1
-    - DOCTEST=1
-
-matrix:
-    include:
-    - python: 3.6
-      env:
-        - COVERAGE=1
-    - python: 3.7
-      dist: xenial
-      sudo: required
+    - COVERAGE=1
+  global:
+    - secure: "L+LQhRYxaT/0VRnbfxYQ3K/qf//g1kH0Rrn1P1blNFzUUrMkBhsRvusZCkinvze54pi2G6zXs2QvFFSKU5fvkrTiSdfbOiXHBJ5oOOAOG9dehyy2zr2rkzBinDdoEOygiuXQdVKM+JTK1gc3wGASp2TjKbEON341c6jYVIX2SZ8nFfcsfyyNh5Cxf0XC017gZuLi3wqfWFlyyCzbwIPTUq88YI+LroaBmE2C5BtZFC4IHlQsZMzo/SNr8uzJwNXWCi3AGo2QVdgwaHGv4JoJpt+JYlgciFKsIyMkEbZrMLK+wIqtyJdNnode7qPVxzQMVSUaLcHL8usKPmB1Ew5ZSpT0Re257HFsu6HX21tPkkxdztQD0yqMENeM98TSbwEragmrXMl7EjDOEoEzlsZzGVUdGy7Vxz1Ub+pTR/hZRTc0Br4eOhM5AUVrdg/Wl013c14A0y8OOt+xGYvVsUmQX2dgvjhAEXK7AsRwJYCNx5Juuz7gdccF9THO1dGfPcKtGPeFPC5FsxYhYr0ZSzMMDm7/oRRmzxYk2f3w11IlUPGa0sTiZu1BliAVq5r/lhw8UJpB0EgM/UxWUb8bd967//AJM3XqHsdohE+1wyicEfjqPtSnTsvQ5Flrqg3aBxvmcro7fIvKrEJu6ufj6j5mAnGDW/pPBv2zWMCDMvfoDx8="
+    - secure: "IDW2SWqYhT0SFi5cBvh/5NpM8o1S+qJYq0+TASOM4Bs6Gpx5Rd6XWtofr87LaU3RZmwcOng2QvGV7JBZa50f9Fnf3ucNzhX5EfP6h2dS8F52yTh0yoM/TN7Al2rIndYF8YH11o+UjrqoQtDmILZlzwZBQcf/0pIuwcPpZBX21iFnaecZihePYCYvhGgDh0RHaZHEbgtPSMW4gDVrxgWB5hahPRKRofnyfpwGdmbpBbXEHY+Avmumt5hmIpmtagrkz2WHrwq+xr1LCG7MGsrgeDxLQtSwrrgAplCvOtIQW9DDz+avY+LEGFCqt6yd/lzwyzllTZyyRsuWd6oRYBkFVJPR5cDM65NSSIY87ZgfUzQHsBPV9D7vjvfhh5A215LTAIzgZ3JLqT6XUjFvjQ7kn6JwvF5dsnNjc4EV7bz0ru3FtJnCFUJzCUPfZ71hl4CHRF/H74XiPijnpjmzVbdQbk1fm48mrKhG6AmKAUYVMDVd2fVRafM8AgWs2MKkyTmddxufmW4LADhof/T1t9qQZsvfRzJ9WVafPnHtTDVvl0BQO2NG3oV62mCWZNEzdOPojYFEsBXPwUMzh+ekq3+m7K/Bsly/dhT+LYcPwvfqbE4K0/mHVgajF0vO3WoGHnZhbVrz0i51YycAjSdWeI1R3RdCOFMwaBTI5e+0fdjP6M0="
 
 before_install:
-    - python -m pip install --upgrade pip
-    - if [ "${LINTING}" == "1" ]; then
-          pip install flake8;
-      fi
-    - if [ "${COVERAGE}" == "1" ]; then
-          pip install coverage coveralls codecov pytest pytest-cov;
-      fi
+  - python -m pip install --upgrade pip
+  - if [ "${LINTING}" == "1" ]; then
+        pip install flake8;
+    fi
+  - if [ "${COVERAGE}" == "1" ]; then
+        pip install coverage coveralls codecov;
+    fi
 
 install:
-    - if [ "${DOCTEST}" == "1" ]; then
-          pip install -e .[doc];
-      else
-          pip install -e .;
-      fi
+  - if [ "${DOCTEST}" == "1" ]; then
+        pip install -e .[doc,tests];
+    else
+        pip install -e .[tests];
+    fi
 
 script:
-    - |
-      if [ "${LINTING}" == "1" ]; then
-          flake8 ppmi;
-      elif [ "${DOCTEST}" == "1" ]; then
-          cd docs;
-          make html;
-          make doctest;
-      else
-          if [ "${COVERAGE}" == "1" ]; then
-              TEST_ARGS="--cov-report term-missing --cov=ppmi";
-          fi
-          py.test ${TEST_ARGS} ppmi;
-      fi
+  - |
+    if [ "${LINTING}" == "1" ]; then
+        flake8 pypmi;
+    else
+        if [ "${DOCTEST}" == "1" ]; then
+            cd docs;
+            make html;
+            make doctest;
+            cd ..;
+        fi
+        if [ "${COVERAGE}" == "1" ]; then
+            TEST_ARGS="--cov-report term-missing --cov=pypmi";
+        fi
+        py.test ${TEST_ARGS} pypmi;
+    fi
 
 after_success:
-    - if [ "${COVERAGE}" == "1" ]; then
-          coveralls; codecov;
-      fi
+  - if [ "${COVERAGE}" == "1" ]; then
+        coveralls; codecov;
+    fi
