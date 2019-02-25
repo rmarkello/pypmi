@@ -21,9 +21,12 @@ def _get_authentication(user=None, password=None):
     Parameters
     ----------
     user : str, optional
-        Provided user login for PPMI database
+        Email for user authentication to the LONI IDA database. If not supplied
+        will look for PPMI_USER variable in environment. Default: None
     password : str, optional
-        Provided password for PPMI database
+        Password for user authentication to the LONI IDA database. If not
+        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        None
 
     Returns
     -------
@@ -56,16 +59,19 @@ def _get_authentication(user=None, password=None):
     return user, password
 
 
-def _get_studydata_params(user, password):
+def _get_studydata_params(user=None, password=None):
     """
     Returns credentials for downloading raw study data from the PPMI
 
     Parameters
     ----------
-    user : str
-        Email for user authentication
-    password : str
-        Password for user authentication
+    user : str, optional
+        Email for user authentication to the LONI IDA database. If not supplied
+        will look for PPMI_USER variable in environment. Default: None
+    password : str, optional
+        Password for user authentication to the LONI IDA database. If not
+        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        None
 
     Returns
     -------
@@ -73,12 +79,15 @@ def _get_studydata_params(user, password):
         With keys 'userId' and 'authKey', ready to be supplied to a GET call
     """
 
+    user, password = _get_authentication(user, password)
+
     # make request to main login page; the returned content has the loginKey
     # embedded within so we have to search for and extract it
     login_url = "https://ida.loni.usc.edu/login.jsp?project=PPMI&page=HOME"
     data = dict(userEmail=user, userPassword=password)
     params = dict(project='PPMI', page='HOME')
     with requests.post(login_url, data=data, params=params) as main:
+        main.raise_for_status()
         try:
             login_key = re.search(r'studyData.jsp\?loginKey=(-?\d+)',
                                   main.text).group(1)
@@ -92,6 +101,7 @@ def _get_studydata_params(user, password):
     params = dict(loginKey=login_key, userEmail=user, project='PPMI',
                   page='DOWNLOADS', subPage='STUDY_DATA')
     with requests.post(study_url, params=params) as study:
+        study.raise_for_status()
         try:
             user_id = re.search(r'userId=(\d+)', study.text).group(1)
             auth_key = re.search(r'authKey=(-?\d+)', study.text).group(1)
@@ -108,12 +118,10 @@ def available_datasets():
     return list(TABULAR.keys())
 
 
-def download_study_data(*dataset, path=None, user=None, password=None,
-                        overwrite=False, verbose=True):
+def download_studydata(*dataset, path=None, user=None, password=None,
+                       overwrite=False, verbose=True):
     """
     Downloads supplied tabular dataset(s) from the PPMI database
-
-    The PPMI (https://ppmi-info.org/)
 
     Parameters
     ----------
@@ -152,14 +160,20 @@ def download_study_data(*dataset, path=None, user=None, password=None,
 
     # check provided credentials; if none were supplied, look for creds in
     # user environmentabl variables
+    if verbose:
+        print('Fetching authentication key for data download')
     user, password = _get_authentication(user, password)
+
+    # updates requested datasets if "all" are desired
+    if 'all' in dataset:
+        dataset = available_datasets()
+    if verbose:
+        print('Requesting {} datasets for download'.format(len(dataset)))
 
     # gets numerical file IDs from tabular.json and appends the desired ids to
     # the request parameter dictionary; if the file is already downloaded we
     # store the filename to return to user
     downloaded = []
-    if 'all' in dataset:
-        dataset = available_datasets()
     for dset in dataset:
         info = TABULAR.get(dset, None)
         if info is None:
@@ -205,7 +219,8 @@ def download_study_data(*dataset, path=None, user=None, password=None,
         except (TypeError, KeyError):
             total_size = None
         if verbose:
-            pbar = tqdm(total=total_size, unit='B', unit_scale=True)
+            pbar = tqdm(total=total_size, unit='B', unit_scale=True,
+                        desc='Downloading PPMI data')
         else:
             pbar = None
 
