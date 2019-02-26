@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Functions for fetching/downloading data from the PPMI database
+"""
 
 from io import BytesIO
 import json
@@ -289,10 +292,10 @@ def available_genetics(projects=False):
         return list(_GENETICS.keys())
 
 
-def download_studydata(*datasets, path=None, user=None, password=None,
-                       overwrite=False, verbose=True):
+def fetch_studydata(*datasets, path=None, user=None, password=None,
+                    overwrite=False, verbose=True):
     """
-    Downloads study data from the PPMI database
+    Downloads specified study data `datasets` from the PPMI database
 
     Parameters
     ----------
@@ -335,10 +338,10 @@ def download_studydata(*datasets, path=None, user=None, password=None,
                           overwrite=overwrite, verbose=verbose)
 
 
-def download_genetics(*datasets, path=None, user=None, password=None,
-                      overwrite=False, verbose=True):
+def fetch_genetics(*datasets, path=None, user=None, password=None,
+                   overwrite=False, verbose=True):
     """
-    Downloads genetics data from the PPMI database
+    Downloads specified genetics data `datasets` from the PPMI database
 
     Parameters
     ----------

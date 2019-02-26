@@ -3,7 +3,7 @@
 __all__ = [
     '__author__', '__description__', '__email__', '__license__',
     '__maintainer__', '__packagename__', '__url__', '__version__',
-    'datasets', 'bids', 'misc', 'pivot', 'get_studydata',
+    'datasets', 'bids', 'misc', 'pivot', 'load_studydata',
 ]
 
 from ._version import get_versions
@@ -20,5 +20,5 @@ from .info import (
     __url__,
 )
 
-from .datasets import get_studydata as get_studydata
+from .datasets import load_studydata
 from . import bids, misc, pivot
