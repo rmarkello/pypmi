@@ -20,13 +20,13 @@ VISITS = [
 ]
 
 
-def load_biospecimen(fpath):
+def load_biospecimen(path):
     """
     Loads biospecimen data for PPMI subjects
 
     Parameters
     ----------
-    fpath : str
+    path : str
         Filepath to directory containing Biospecimen_Analysis_Results.csv file
 
     Returns
@@ -47,7 +47,7 @@ def load_biospecimen(fpath):
         TESTVALUE=str
     )
 
-    fname = op.join(fpath, 'Current_Biospecimen_Analysis_Results.csv')
+    fname = op.join(path, 'Current_Biospecimen_Analysis_Results.csv')
     data = pd.read_csv(fname, dtype=dtype)
 
     data['TESTVALUE'] = pd.to_numeric(data['TESTVALUE'], errors='coerce')
@@ -58,7 +58,7 @@ def load_biospecimen(fpath):
     return data
 
 
-def load_datscan(fpath):
+def load_datscan(path):
     """
     Loads DaTscan data for PPMI subjects
 
@@ -83,7 +83,7 @@ def load_datscan(fpath):
         PATNO=str, EVENT_ID=cdtype(VISITS, ordered=True)
     )
 
-    fname = op.join(fpath, 'DATScan_Analysis.csv')
+    fname = op.join(path, 'DATScan_Analysis.csv')
     data = pd.read_csv(fname, dtype=dtype)
 
     # melt into tidy DataFrame
@@ -191,13 +191,13 @@ def available_behavior():
     return measures
 
 
-def load_behavior(fpath):
+def load_behavior(path):
     """
     Loads clinical-behavioral data for PPMI subjects
 
     Parameters
     ----------
-    fpath : str
+    path : str
         Filepath to directory containing all behavioral files
 
     Returns
@@ -224,7 +224,7 @@ def load_behavior(fpath):
         # go through relevant files and items for current key and grab scores
         for fname, items in info['files'].items():
             # read in file
-            data = pd.read_csv(op.join(fpath, fname))
+            data = pd.read_csv(op.join(path, fname))
             # iterate through items to be retrieved and apply operations
             for n, (it, ap, ope) in enumerate(zip(items, capply, copera)):
                 score = ope(data[it].applymap(ap), axis=1)
@@ -285,13 +285,13 @@ def _get_adj_moca(df):
     return data
 
 
-def load_demographics(fpath):
+def load_demographics(path):
     """
     Loads demographic data for PPMI subjects
 
     Parameters
     ----------
-    fpath : str
+    path : str
         Filepath to directory containing all demographic files
 
     Returns
@@ -310,7 +310,7 @@ def load_demographics(fpath):
     # iterate through demographic info to get
     for key, curr_key in DEMOGRAPHIC_INFO.items():
         for n, (fname, items) in enumerate(curr_key['files'].items()):
-            data = pd.read_csv(op.join(fpath, fname))
+            data = pd.read_csv(op.join(path, fname))
             curr_score = data[items]
             for attr in [f for f in curr_key.keys() if f not in ['files']]:
                 if hasattr(curr_score, attr):
@@ -328,13 +328,13 @@ def load_demographics(fpath):
     return df.drop_duplicates(subset=['PARTICIPANT'])
 
 
-def load_studydata(fpath):
+def load_studydata(path):
     """
     Loads raw PPMI study data into analysis-ready dataframe
 
     Parameters
     ----------
-    fpath : str
+    path : str
         Filepath to directory containing all tabular study data downloaded from
         the PPMI database
 
@@ -386,10 +386,10 @@ def load_studydata(fpath):
     )
 
     # combine all datasets
-    beh = load_behavior(fpath).dropna(subset=['VISIT', 'VISIT_DATE'])
-    bio = load_biospecimen(fpath).dropna(subset=['VISIT'])
-    dat = load_datscan(fpath).dropna(subset=['VISIT'])
-    dem = load_demographics(fpath)
+    beh = load_behavior(path).dropna(subset=['VISIT', 'VISIT_DATE'])
+    bio = load_biospecimen(path).dropna(subset=['VISIT'])
+    dat = load_datscan(path).dropna(subset=['VISIT'])
+    dem = load_demographics(path)
 
     visits = (beh.get(['PARTICIPANT', 'VISIT', 'VISIT_DATE'])
                  .sort_values('VISIT')
