@@ -23,9 +23,9 @@ def test_get_authentication():
     assert utils._get_authentication('user', 'pass') == ('user', 'pass')
 
 
-def test_get_studydata_params():
+def test_get_download_params():
     # confirm we can retrieve authorization key effectively
-    params = utils._get_studydata_params()
+    params = utils._get_download_params()
     assert isinstance(params, dict)
     try:
         assert all(f in params.keys() for f in ['authKey', 'userId'])
@@ -33,13 +33,13 @@ def test_get_studydata_params():
         assert False
 
     # confirm bad user/password returns NO authorization
-    assert utils._get_studydata_params('baduser', 'badpass') is None
+    assert utils._get_download_params('baduser', 'badpass') is None
 
 
-def test_available_datasets():
+def test_available_studydata():
     # 113 datasets available, should get a list of them
-    assert isinstance(utils.available_datasets(), list)
-    assert len(utils.available_datasets()) == 113
+    assert isinstance(utils.available_studydata(), list)
+    assert len(utils.available_studydata()) == 113
 
 
 @pytest.mark.parametrize(('datasets', 'expected'), [

@@ -10,8 +10,10 @@ import zipfile
 import requests
 from tqdm import tqdm
 
-with open(resource_filename('pypmi', 'data/tabular.json'), 'r') as src:
-    TABULAR = json.load(src)
+with open(resource_filename('pypmi', 'data/studydata.json'), 'r') as src:
+    _STUDYDATA = json.load(src)
+with open(resource_filename('pypmi', 'data/genetics.json'), 'r') as src:
+    _GENETICS = json.load(src)
 
 
 def _get_authentication(user=None, password=None):
@@ -59,7 +61,7 @@ def _get_authentication(user=None, password=None):
     return user, password
 
 
-def _get_studydata_params(user=None, password=None):
+def _get_download_params(user=None, password=None):
     """
     Returns credentials for downloading raw study data from the PPMI
 
@@ -113,23 +115,21 @@ def _get_studydata_params(user=None, password=None):
     return dict(userId=user_id, authKey=auth_key)
 
 
-def available_datasets():
-    """ Lists datasets available to download from the PPMI """
-    return list(TABULAR.keys())
-
-
-def download_studydata(*dataset, path=None, user=None, password=None,
-                       overwrite=False, verbose=True):
+def _download_data(info, url, path=None, user=None, password=None,
+                   overwrite=False, verbose=True):
     """
-    Downloads supplied tabular dataset(s) from the PPMI database
+    Downloads dataset(s) listed in `info` from `url`
 
     Parameters
     ----------
-    *dataset : str
-        Dataset to download. Can provide as many as desired, but they should
-        listed in :py:func:`ppmi.datasets.available_datasets()`. Alternatively,
-        if any of the provided values are 'all', then all available datasets
-        will be fetched.
+    info : dict
+        Dataset information to download. Each key must have a value that is
+        a dictionary containing keys 'id' (specifying the file ID of the
+        dataset in the PPMI database) and 'name' (specifying the file name of
+        the dataset in the PPMI database).
+    url : str
+        URL from which to download data. Will be formatted with authentication
+        and requested data.
     path : str, optional
         Filepath where downloaded data should be saved. If data files already
         exist at `path` they will be overwritten unless `overwrite=False`. If
@@ -149,11 +149,10 @@ def download_studydata(*dataset, path=None, user=None, password=None,
 
     Returns
     -------
-    downloaded : str or list
-        Filepath(s) to downloaded CSV files
+    downloaded : list
+        Filepath(s) to downloaded datasets
     """
 
-    url = "https://utilities.loni.usc.edu/download/study"
     params = dict(type='GET_FILES', userId=None, authKey=None, fileId=[])
     if path is None:
         path = os.getcwd()
@@ -164,25 +163,20 @@ def download_studydata(*dataset, path=None, user=None, password=None,
         print('Fetching authentication key for data download')
     user, password = _get_authentication(user, password)
 
-    # updates requested datasets if "all" are desired
-    if 'all' in dataset:
-        dataset = available_datasets()
-    if verbose:
-        print('Requesting {} datasets for download'.format(len(dataset)))
-
     # gets numerical file IDs from tabular.json and appends the desired ids to
     # the request parameter dictionary; if the file is already downloaded we
     # store the filename to return to user
     downloaded = []
-    for dset in dataset:
-        info = TABULAR.get(dset, None)
-        if info is None:
+    if verbose:
+        print('Requesting {} datasets for download'.format(len(info)))
+    for dset, file_info in info.items():
+        if file_info is None:
             raise ValueError('Provided dataset {} not available. Please see '
                              'available_datasets() for valid entries.'
                              .format(dset))
 
-        file_id = info.get('id', None)
-        file_name = os.path.join(path, info.get('name', ''))
+        file_id = file_info.get('id', None)
+        file_name = os.path.join(path, file_info.get('name', ''))
 
         # if we don't want to overwrite existing data make sure that file
         # does not exist before appending it to request parameters
@@ -199,7 +193,7 @@ def download_studydata(*dataset, path=None, user=None, password=None,
     # can be obtained from a simple request we have to make nested requests
     # it's possible that these calls might fail (especially if the provided
     # user and password were supplied incorrectly), so confirm before updating
-    authentication = _get_studydata_params(user=user, password=password)
+    authentication = _get_download_params(user=user, password=password)
     if authentication is None:
         raise ValueError('Provided user and password could not be '
                          'authenticated. Please check inputs and try again. '
@@ -254,3 +248,140 @@ def download_studydata(*dataset, path=None, user=None, password=None,
                 dest.write(out.read())
 
     return downloaded
+
+
+def available_studydata():
+    """
+    Lists study data available to download from the PPMI
+
+    Returns
+    -------
+    available : list
+        List of available data files
+    """
+
+    return list(_STUDYDATA.keys())
+
+
+def available_genetics(projects=False):
+    """
+    Lists genetics data available to download from the PPMI
+
+    Parameters
+    ----------
+    projects : bool, optional
+        List available projects instead of individual data files available for
+        download. Due to the size of genetic data, many datasets are split up
+        into multiple files associated with a single project or analysis; you
+        can specify these projects when downloading data with
+        :py:func:`pypmi.datasets.download_genetics` and all associated files
+        will be fetched.
+
+    Returns
+    -------
+    available : list
+        List of available data files
+    """
+
+    if projects:
+        return ['project {}'.format(p) for p in [107, 115, 116, 118, 120, 133]]
+    else:
+        return list(_GENETICS.keys())
+
+
+def download_studydata(*datasets, path=None, user=None, password=None,
+                       overwrite=False, verbose=True):
+    """
+    Downloads study data from the PPMI database
+
+    Parameters
+    ----------
+    *datasets : str
+        Datasets to download. Can provide as many as desired, but they should
+        be listed in :py:func:`ppmi.datasets.available_studydata()`.
+        Alternatively, if any of the provided values are 'all', then all
+        available datasets will be fetched.
+    path : str, optional
+        Filepath where downloaded data should be saved. If data files already
+        exist at `path` they will be overwritten unless `overwrite=False`. If
+        not supplied the current directory is used. Default: None
+    user : str, optional
+        Email for user authentication to the LONI IDA database. If not supplied
+        will look for PPMI_USER variable in environment. Default: None
+    password : str, optional
+        Password for user authentication to the LONI IDA database. If not
+        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        None
+    overwrite : bool, optional
+        Whether to overwrite existing PPMI data files at `path` if they already
+        exist. Default: False
+    verbose : bool, optional
+        Whether to print progress bar as download occurs. Default: True
+
+    Returns
+    -------
+    downloaded : list
+        Filepath(s) to downloaded datasets
+    """
+
+    url = "https://utilities.loni.usc.edu/download/study"
+
+    # take subset of available study data based on requested `datasets`
+    if 'all' in datasets:
+        datasets = available_studydata()
+    info = {dset: _STUDYDATA.get(dset) for dset in datasets}
+
+    return _download_data(info, url, path=path, user=user, password=password,
+                          overwrite=overwrite, verbose=verbose)
+
+
+def download_genetics(*datasets, path=None, user=None, password=None,
+                      overwrite=False, verbose=True):
+    """
+    Downloads genetics data from the PPMI database
+
+    Parameters
+    ----------
+    *datasets : str
+        Datasets to download. Can provide as many as desired, but they should
+        be listed in :py:func:`ppmi.datasets.available_genetics()`.
+        Alternatively, if any of the provided values are 'all', then all
+        available datasets will be fetched.
+    path : str, optional
+        Filepath where downloaded data should be saved. If data files already
+        exist at `path` they will be overwritten unless `overwrite=False`. If
+        not supplied the current directory is used. Default: None
+    user : str, optional
+        Email for user authentication to the LONI IDA database. If not supplied
+        will look for PPMI_USER variable in environment. Default: None
+    password : str, optional
+        Password for user authentication to the LONI IDA database. If not
+        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        None
+    overwrite : bool, optional
+        Whether to overwrite existing PPMI data files at `path` if they already
+        exist. Default: False
+    verbose : bool, optional
+        Whether to print progress bar as download occurs. Default: True
+
+    Returns
+    -------
+    downloaded : list
+        Filepath(s) to downloaded datasets
+    """
+
+    url = "https://utilities.loni.usc.edu/download/genetic"
+
+    # take subset of available genetics data based on requested `datasets`
+    if 'all' in datasets:
+        datasets = available_genetics(projects=False)
+    # check for project designations in requested data
+    for project in available_genetics(projects=True):
+        if project in datasets:
+            datasets.remove(project)
+            datasets += [f for f in _GENETICS.keys() if project in f.lower()]
+
+    info = {dset: _GENETICS.get(dset) for dset in datasets}
+
+    return _download_data(info, url, path=path, user=user, password=password,
+                          overwrite=overwrite, verbose=verbose)
