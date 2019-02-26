@@ -24,7 +24,7 @@ Data, made available on the [PPMI website](http://www.ppmi-info.org/data), inclu
 While accessing this data is straightforward (researchers must simply sign a data usage agreement and provide information on the purpose of their research), the sheer amount of data made available can be quite overwhelming to work with.
 Thus, the primary goal of this package is to provide a Python interface to making working with the data provided by the PPMI easier.
 While this project is still very much **under development**, it is neverthless functional!
-Most useful may be the functions contained in `ppmi.datasets`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `ppmi.bids`, which helps convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
+Most useful may be the functions contained in `pypmi.datasets`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `pypmi.bids`, which helps convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
 
 I hope to continue adding useful features to this package as I keep working with the data, but take a look below at [development and getting involved](#development-and-getting-involved) if you're interested in contributing, yourself!
 
@@ -38,12 +38,13 @@ Once you have access to the [PPMI database](https://www.ppmi-info.org/access-dat
 4. Click "Select ALL tabular data (csv) format" and then press "Download>>" in the top right hand corner of the page
 5. Unzip the downloaded directory and save it somewhere on your computer
 
-Once you've downloaded the files, load up Python and import the data
+Alternatively, you can use the `pypmi` API to download the data programatically:
 
 ```python
->>> import ppmi
->>> ppmi_data_path = '/this/is/the/path/to/my/unzipped/data'
->>> data = ppmi.get_all_data(ppmi_data_path)
+>>> from pypmi import datasets
+>>> filepath = '/where/to/save/downloaded/data
+>>> datasets.fetch_studydata('all', path=filepath, user='PPMI_USERNAME', password='PPMI_PASSWORD')
+>>> data = datasets.load_studydata(filepath)
 >>> data.columns
 Index(['PARTICIPANT', 'DIAGNOSIS', 'GENDER', 'RACE', 'AGE', 'FAMILY_HISTORY',
        'HANDEDNESS', 'EDUCATION', 'SYMPTOM_DURATION', 'SITE', 'VISIT',
@@ -51,7 +52,7 @@ Index(['PARTICIPANT', 'DIAGNOSIS', 'GENDER', 'RACE', 'AGE', 'FAMILY_HISTORY',
       dtype='object')
 ```
 
-The call to `ppmi.get_all_data()` may take a few seconds to run&mdash;there's a lot of data to import!
+The call to `pypmi.load_studydata()` may take a few seconds to run&mdash;there's a lot of data to import!
 The `data` object returned is a hybrid [wide/narrow](https://en.wikipedia.org/wiki/Wide_and_narrow_data) format [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html), and can be queried in a number of useful ways:
 
 ```python
@@ -85,6 +86,6 @@ The PPMI&mdash;a public-private partnership&mdash;is funded by the Michael J. Fo
 ## License information
 
 This codebase is licensed under the 3-clause BSD license.
-The full license can be found in the [LICENSE](https://github.com/rmarkello/abagen/blob/master/LICENSE) file in the `ppmi` distribution.
+The full license can be found in the [LICENSE](https://github.com/rmarkello/abagen/blob/master/LICENSE) file in the `pypmi` distribution.
 
 All trademarks referenced herein are property of their respective holders.

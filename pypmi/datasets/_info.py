@@ -1,22 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+Data structures specifying methods for creating or calculating behavioral and
+demographic measures
+"""
 
-from functools import reduce
-import itertools
-import os.path as op
 import pandas as pd
 import numpy as np
 
-RENAME_COLS = dict(
-    PATNO='PARTICIPANT', INFODT='VISIT_DATE', EVENT_ID='VISIT'
-)
-RETAIN_COLS = [
-    'PARTICIPANT', 'PAG_NAME', 'VISIT', 'VISIT_DATE', 'TEST', 'SCORE'
-]
-EXTRA = [
-    'PATNO', 'EVENT_ID', 'PAG_NAME', 'INFODT'
-]
-APPLYMAP = itertools.repeat(lambda x: x)
-OPERATION = itertools.repeat(np.sum)
 
 BEHAVIORAL_INFO = {
     'Benton': {
@@ -300,95 +290,162 @@ BEHAVIORAL_INFO = {
     }
 }
 
-
-def available_measures():
-    """ Lists available clinical-behavioral composite measures """
-    # we probably shouldn't return MOCA Unadjusted since we drop it but /shrug
-    return list(BEHAVIORAL_INFO.keys()) + ['MOCA']
-
-
-def get_data(fpath):
-    """
-    Gets clinical-behavioral data for PPMI subjects
-
-    Parameters
-    ----------
-    fpath : str
-        Filepath to directory containing all behavioral files
-
-    Returns
-    -------
-    df : pandas.DataFrame
-        Tidy DataFrame with all clinical-behavioral assessments
-    """
-
-    df = pd.DataFrame()
-    # iterate through all keys in dictionary
-    for key in BEHAVIORAL_INFO.keys():
-        cextra = BEHAVIORAL_INFO[key].get('extra', EXTRA)
-        capply = BEHAVIORAL_INFO[key].get('applymap', APPLYMAP)
-        copera = BEHAVIORAL_INFO[key].get('operation', OPERATION)
-
-        temp_scores = []
-        # go through relevant files and items for current key and grab scores
-        for fname, items in BEHAVIORAL_INFO[key]['files'].items():
-            # read in file
-            data = pd.read_csv(op.join(fpath, fname))
-            # iterate through items to be retrieved and apply operations
-            for n, (it, ap, ope) in enumerate(zip(items, capply, copera)):
-                score = ope(data[it].applymap(ap), axis=1)
-                temp_scores.append(data[cextra].join(pd.Series(score, name=n)))
-
-        # merge temp score DataFrames
-        curr_df = reduce(lambda df1, df2: pd.merge(df1, df2, on=cextra),
-                         temp_scores)
-        # combine individual scores for key with joinfunc and add to extra info
-        joinfunc = BEHAVIORAL_INFO[key].get('joinfunc', np.sum)
-        score = pd.Series(joinfunc(curr_df.drop(cextra, axis=1), axis=1)
-                          .astype('float'), name='SCORE')
-        curr_df = curr_df[cextra].astype('str').join(score).assign(TEST=key)
-        if 'PAG_NAME' not in curr_df.columns:
-            curr_df['PAG_NAME'] = 'COMBO'
-        # append resultant DataFrame to df
-        df = df.append(curr_df, ignore_index=True, sort=True)
-
-    # coerce infodt to datetime format
-    df['INFODT'] = pd.to_datetime(df['INFODT'], format='%m/%Y')
-    df = get_adj_moca(df).rename(columns=RENAME_COLS)[RETAIN_COLS]
-
-    return df
-
-
-def get_adj_moca(df):
-    """
-    Gets adjusted MOCA score from `df` (i.e., accounts for education)
-
-    Adds 1 to unadjusted MOCA score if years of education is <=12 and
-    unadjusted score is <30; otherwise, unadjusted MOCA is carried through.
-
-    Parameters
-    ----------
-    df: pandas.DataFrame
-        DataFrame containing various behavioral metrics
-
-    Returns
-    -------
-    data : pandas.DataFrame
-        DataFrame with adjusted MOCA instead of unadjusted MOCA
-    """
-
-    moca = pd.merge(df.query('TEST == "MOCA Unadjusted" & SCORE < 30'),
-                    df.query('TEST == "EDUCYRS"')[['PATNO', 'SCORE']],
-                    on='PATNO')
-    mocaadj = (moca.drop(['SCORE_x', 'SCORE_y'], axis=1)
-                   .join(pd.Series(moca[['SCORE_x', 'SCORE_y']]
-                                   .sum(axis=1), name='SCORE')))
-    mocanoadj = df.query('TEST == "MOCA Unadjusted" & SCORE >= 30')
-    mocaadj = mocaadj.append(mocanoadj, sort=True)
-    mocaadj.TEST = 'MOCA'
-
-    new_df = df.append(mocaadj, sort=True, ignore_index=True)
-    to_drop = new_df.query('TEST == "EDUCYRS" | TEST == "MOCA Unadjusted"')
-    data = new_df.drop(to_drop.index, axis=0)
-
-    return data
+DEMOGRAPHIC_INFO = {
+    'DIAGNOSIS': {
+        'files': {
+            'Screening___Demographics.csv': 'APPRDX'
+        },
+        'replace': {
+            'input': {
+                1: 'PD',
+                2: 'HC',
+                3: 'SWEDD',
+                4: 'PROD',
+                5: 'GC_PD',
+                6: 'GC_HC',
+                7: 'GR_PD',
+                8: 'GR_HC'
+            }
+        }
+    },
+    'BIRTH_DATE': {
+        'files': {
+            'Randomization_table.csv': 'BIRTHDT'
+        },
+        'apply': {
+            'input': pd.to_datetime
+        }
+    },
+    'DIAGNOSIS_DATE': {
+        'files': {
+            'PD_Features.csv': 'PDDXDT'
+        },
+        'apply': {
+            'input': pd.to_datetime
+        }
+    },
+    'ENROLL_DATE': {
+        'files': {
+            'Randomization_table.csv': 'ENROLLDT'
+        },
+        'apply': {
+            'input': pd.to_datetime
+        }
+    },
+    'FAMILY_HISTORY': {
+        'files': {
+            'Family_History__PD_.csv': [
+                'BIOMOMPD',
+                'BIODADPD',
+                'FULSIBPD',
+                'HAFSIBPD',
+                'MAGPARPD',
+                'PAGPARPD',
+                'MATAUPD',
+                'PATAUPD',
+                'KIDSPD'
+            ]
+        },
+        'apply': {
+            'input': np.nansum,
+            'kwargs': {
+                'axis': 1
+            }
+        },
+        'astype': {
+            'input': 'bool'
+        },
+        'replace': {
+            'input': {
+                True: 1, False: 0
+            }
+        }
+    },
+    'AGE': {
+        'files': {
+            'Randomization_table.csv': [
+                'BIRTHDT',
+                'ENROLLDT'
+            ]
+        },
+        'apply': {
+            'input': pd.to_datetime
+        },
+        'diff': {
+            'input': 1,
+            'kwargs': {
+                'axis': 1
+            }
+        },
+        'get': {
+            'input': 'ENROLLDT'
+        },
+        'divide': {
+            'input': np.timedelta64(1, 'Y')
+        }
+    },
+    'GENDER': {
+        'files': {
+            'Randomization_table.csv': 'GENDER'
+        },
+        'replace': {
+            'input': {
+                0: 'F',
+                1: 'F',
+                2: 'M',
+                np.nan: 'NS'
+            }
+        }
+    },
+    'RACE': {
+        'files': {
+            'Screening___Demographics.csv': [
+                'RAINDALS',
+                'RAASIAN',
+                'RABLACK',
+                'RAHAWOPI',
+                'RAWHITE',
+                'RANOS'
+            ]
+        },
+        'apply': {
+            'input': np.where,
+            'kwargs': {'axis': 1}
+        },
+        'transform': {
+            'input': lambda x: x[0][0] if len(x[0]) == 1 else 'MULTI'
+        },
+        'replace': {
+            'input': {
+                0: 'INDALS',
+                1: 'ASIAN',
+                2: 'BLACK',
+                3: 'HAWOPI',
+                4: 'WHITE',
+                5: 'NOTSPECIFIED'
+            }
+        }
+    },
+    'SITE': {
+        'files': {
+            'Center-Subject_List.csv': 'CNO'
+        }
+    },
+    'HANDEDNESS': {
+        'files': {
+            'Socio-Economics.csv': 'HANDED'
+        },
+        'replace': {
+            'input': {
+                1: 'RIGHT',
+                2: 'LEFT',
+                3: 'BOTH'
+            }
+        }
+    },
+    'EDUCATION': {
+        'files': {
+            'Socio-Economics.csv': 'EDUCYRS'
+        }
+    },
+}

@@ -1,4 +1,4 @@
 include README.md LICENSE
 
 include versioneer.py
-include ppmi/_version.py
+include pypmi/_version.py
