@@ -338,7 +338,7 @@ DEMOGRAPHIC_INFO = {
     },
     'status': {
         'files': {
-            'Patient_status.csv': 'ENROLL_STATUS'
+            'Patient_Status.csv': 'ENROLL_STATUS'
         }
     },
     'family_history': {
