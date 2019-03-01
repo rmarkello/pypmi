@@ -21,26 +21,37 @@ your own workflows.
 
 .. currentmodule:: pypmi.datasets
 
-Functions for downloading datasets from the PPMI database
+Functions for downloading datasets from the PPMI database:
 
 .. autosummary::
    :template: function.rst
    :toctree:  generated/
 
     available_studydata
-    fetch_studydata
     available_genetics
+    fetch_studydata
     fetch_genetics
 
-Functions for loading datasets into memory
+Functions for loading data from PPMI database into tidy dataframes:
 
 .. autosummary::
    :template: function.rst
    :toctree:  generated/
 
-    load_studydata
     load_behavior
     load_biospecimen
     load_datscan
     load_demographics
-    load_genetics
+    load_dates
+
+Functions for listing measures available from relevant
+``pypmi.datasets.load_X()`` commands:
+
+.. autosummary::
+   :template: function.rst
+   :toctree:  generated/
+
+    available_behavior
+    available_biospecimen
+    available_datscan
+    available_demographics
