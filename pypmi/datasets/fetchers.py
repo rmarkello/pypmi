@@ -194,7 +194,8 @@ def _download_data(info: Dict[str, Dict[str, str]],
             if pbar is not None:
                 pbar.update(len(chunk))
         out.seek(0)
-        pbar.close()
+        if pbar is not None:
+            pbar.close()
         if total_size is not None and total_size != wrote:
             print('Unable to fetch all requested data ({}/{} bytes received). '
                   'Downloaded data may be corrupted; use at your own risk.'
