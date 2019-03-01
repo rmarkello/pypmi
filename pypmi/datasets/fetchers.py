@@ -127,7 +127,7 @@ def _download_data(info: Dict[str, Dict[str, str]],
     # check provided credentials; if none were supplied, look for creds in
     # user environmental variables
     if verbose:
-        print('Fetching authentication key for data download')
+        print('Fetching authentication key for data download...')
     user, password = _get_authentication(user, password)
 
     # gets numerical file IDs from studydata.json and appends the desired ids
@@ -135,7 +135,7 @@ def _download_data(info: Dict[str, Dict[str, str]],
     # store the filename to return to user
     downloaded = []
     if verbose:
-        print('Requesting {} datasets for download'.format(len(info)))
+        print('Requesting {} datasets for download...'.format(len(info)))
     for dset, file_info in info.items():
         if file_info is None:
             raise ValueError('Provided dataset {} not available. Please see '
