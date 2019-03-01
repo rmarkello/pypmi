@@ -8,6 +8,7 @@ import json
 import os
 from pkg_resources import resource_filename
 import re
+from typing import Dict, List, Tuple
 import zipfile
 
 import requests
@@ -19,7 +20,8 @@ with open(resource_filename('pypmi', 'data/genetics.json'), 'r') as src:
     _GENETICS = json.load(src)
 
 
-def _get_authentication(user=None, password=None):
+def _get_authentication(user: str = None,
+                        password: str = None) -> Tuple[str, str]:
     """
     Gets PPMI authentication from environmental variables if not supplied
 
@@ -27,10 +29,10 @@ def _get_authentication(user=None, password=None):
     ----------
     user : str, optional
         Email for user authentication to the LONI IDA database. If not supplied
-        will look for PPMI_USER variable in environment. Default: None
+        will look for $PPMI_USER variable in environment. Default: None
     password : str, optional
         Password for user authentication to the LONI IDA database. If not
-        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        supplied will look for $PPMI_PASSWORD variable in environment. Default:
         None
 
     Returns
@@ -64,7 +66,8 @@ def _get_authentication(user=None, password=None):
     return user, password
 
 
-def _get_download_params(user=None, password=None):
+def _get_download_params(user: str = None,
+                         password: str = None) -> Dict[str, str]:
     """
     Returns credentials for downloading raw study data from the PPMI
 
@@ -72,10 +75,10 @@ def _get_download_params(user=None, password=None):
     ----------
     user : str, optional
         Email for user authentication to the LONI IDA database. If not supplied
-        will look for PPMI_USER variable in environment. Default: None
+        will look for $PPMI_USER variable in environment. Default: None
     password : str, optional
         Password for user authentication to the LONI IDA database. If not
-        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        supplied will look for $PPMI_PASSWORD variable in environment. Default:
         None
 
     Returns
@@ -118,8 +121,13 @@ def _get_download_params(user=None, password=None):
     return dict(userId=user_id, authKey=auth_key)
 
 
-def _download_data(info, url, path=None, user=None, password=None,
-                   overwrite=False, verbose=True):
+def _download_data(info: Dict[str, Dict[str, str]],
+                   url: str,
+                   path: str = None,
+                   user: str = None,
+                   password: str = None,
+                   overwrite: bool = False,
+                   verbose: bool = True) -> List[str]:
     """
     Downloads dataset(s) listed in `info` from `url`
 
@@ -139,10 +147,10 @@ def _download_data(info, url, path=None, user=None, password=None,
         not supplied the current directory is used. Default: None
     user : str, optional
         Email for user authentication to the LONI IDA database. If not supplied
-        will look for PPMI_USER variable in environment. Default: None
+        will look for $PPMI_USER variable in environment. Default: None
     password : str, optional
         Password for user authentication to the LONI IDA database. If not
-        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        supplied will look for $PPMI_PASSWORD variable in environment. Default:
         None
     overwrite : bool, optional
         Whether to overwrite existing PPMI data files at `path` if they already
@@ -161,13 +169,13 @@ def _download_data(info, url, path=None, user=None, password=None,
         path = os.getcwd()
 
     # check provided credentials; if none were supplied, look for creds in
-    # user environmentabl variables
+    # user environmental variables
     if verbose:
         print('Fetching authentication key for data download')
     user, password = _get_authentication(user, password)
 
-    # gets numerical file IDs from tabular.json and appends the desired ids to
-    # the request parameter dictionary; if the file is already downloaded we
+    # gets numerical file IDs from studydata.json and appends the desired ids
+    # to the request parameter dictionary; if the file is already downloaded we
     # store the filename to return to user
     downloaded = []
     if verbose:
@@ -193,7 +201,7 @@ def _download_data(info, url, path=None, user=None, password=None,
         return downloaded
 
     # we need to get the authentication key and user id; since neither of these
-    # can be obtained from a simple request we have to make nested requests
+    # can be obtained from a simple request we have to make nested requests.
     # it's possible that these calls might fail (especially if the provided
     # user and password were supplied incorrectly), so confirm before updating
     authentication = _get_download_params(user=user, password=password)
@@ -221,7 +229,7 @@ def _download_data(info, url, path=None, user=None, password=None,
         else:
             pbar = None
 
-        # get the actual data! we're saving iy to an internal stream so that we
+        # get the actual data! we're saving it to an internal stream so that we
         # don't have to write to a temporary zipfile if >1 files were requested
         out, wrote = BytesIO(), 0
         for chunk in data.iter_content(1024):
@@ -253,7 +261,7 @@ def _download_data(info, url, path=None, user=None, password=None,
     return downloaded
 
 
-def available_studydata():
+def available_studydata() -> List[str]:
     """
     Lists study data available to download from the PPMI
 
@@ -266,7 +274,7 @@ def available_studydata():
     return list(_STUDYDATA.keys())
 
 
-def available_genetics(projects=False):
+def available_genetics(projects: bool = False) -> List[str]:
     """
     Lists genetics data available to download from the PPMI
 
@@ -277,7 +285,7 @@ def available_genetics(projects=False):
         download. Due to the size of genetic data, many datasets are split up
         into multiple files associated with a single project or analysis; you
         can specify these projects when downloading data with
-        :py:func:`pypmi.datasets.download_genetics` and all associated files
+        :py:func:`pypmi.datasets.fetch_genetics` and all associated files
         will be fetched.
 
     Returns
@@ -292,8 +300,12 @@ def available_genetics(projects=False):
         return list(_GENETICS.keys())
 
 
-def fetch_studydata(*datasets, path=None, user=None, password=None,
-                    overwrite=False, verbose=True):
+def fetch_studydata(*datasets: str,
+                    path: str = None,
+                    user: str = None,
+                    password: str = None,
+                    overwrite: bool = False,
+                    verbose: bool = True) -> List[str]:
     """
     Downloads specified study data `datasets` from the PPMI database
 
@@ -301,7 +313,7 @@ def fetch_studydata(*datasets, path=None, user=None, password=None,
     ----------
     *datasets : str
         Datasets to download. Can provide as many as desired, but they should
-        be listed in :py:func:`ppmi.datasets.available_studydata()`.
+        be listed in :py:func:`pypmi.datasets.available_studydata()`.
         Alternatively, if any of the provided values are 'all', then all
         available datasets will be fetched.
     path : str, optional
@@ -310,10 +322,10 @@ def fetch_studydata(*datasets, path=None, user=None, password=None,
         not supplied the current directory is used. Default: None
     user : str, optional
         Email for user authentication to the LONI IDA database. If not supplied
-        will look for PPMI_USER variable in environment. Default: None
+        will look for $PPMI_USER variable in environment. Default: None
     password : str, optional
         Password for user authentication to the LONI IDA database. If not
-        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        supplied will look for $PPMI_PASSWORD variable in environment. Default:
         None
     overwrite : bool, optional
         Whether to overwrite existing PPMI data files at `path` if they already
@@ -338,8 +350,12 @@ def fetch_studydata(*datasets, path=None, user=None, password=None,
                           overwrite=overwrite, verbose=verbose)
 
 
-def fetch_genetics(*datasets, path=None, user=None, password=None,
-                   overwrite=False, verbose=True):
+def fetch_genetics(*datasets: str,
+                   path: str = None,
+                   user: str = None,
+                   password: str = None,
+                   overwrite: bool = False,
+                   verbose: bool = True) -> List[str]:
     """
     Downloads specified genetics data `datasets` from the PPMI database
 
@@ -347,7 +363,7 @@ def fetch_genetics(*datasets, path=None, user=None, password=None,
     ----------
     *datasets : str
         Datasets to download. Can provide as many as desired, but they should
-        be listed in :py:func:`ppmi.datasets.available_genetics()`.
+        be listed in :py:func:`pypmi.datasets.available_genetics()`.
         Alternatively, if any of the provided values are 'all', then all
         available datasets will be fetched.
     path : str, optional
@@ -356,10 +372,10 @@ def fetch_genetics(*datasets, path=None, user=None, password=None,
         not supplied the current directory is used. Default: None
     user : str, optional
         Email for user authentication to the LONI IDA database. If not supplied
-        will look for PPMI_USER variable in environment. Default: None
+        will look for $PPMI_USER variable in environment. Default: None
     password : str, optional
         Password for user authentication to the LONI IDA database. If not
-        supplied will look for PPMI_PASSWORD variable in environment. Default:
+        supplied will look for $PPMI_PASSWORD variable in environment. Default:
         None
     overwrite : bool, optional
         Whether to overwrite existing PPMI data files at `path` if they already

@@ -4,19 +4,20 @@ Data structures specifying methods for creating or calculating behavioral and
 demographic measures
 """
 
-import pandas as pd
 import numpy as np
+import pandas as pd
+from pandas.api.types import CategoricalDtype as cdtype
 
 
 BEHAVIORAL_INFO = {
-    'Benton': {
+    'benton': {
         'files': {
             'Benton_Judgment_of_Line_Orientation.csv': [
                 [f'BJLOT{num}' for num in range(1, 31)]
             ]
         }
     },
-    'EDUCYRS': {
+    'education': {
         'files': {
             'Socio-Economics.csv': [
                 ['EDUCYRS']
@@ -26,7 +27,7 @@ BEHAVIORAL_INFO = {
             lambda x: 1.0 if x <= 12 else 0
         ]
     },
-    'Epworth': {
+    'epworth': {
         'files': {
             'Epworth_Sleepiness_Scale.csv': [
                 ['ESS1', 'ESS2', 'ESS3', 'ESS4', 'ESS5', 'ESS6', 'ESS7',
@@ -34,7 +35,7 @@ BEHAVIORAL_INFO = {
             ]
         }
     },
-    'GDS': {
+    'gds': {
         'files': {
             'Geriatric_Depression_Scale__Short_.csv': [
                 ['GDSSATIS', 'GDSGSPIR', 'GDSHAPPY', 'GDSALIVE', 'GDSENRGY'],
@@ -47,14 +48,14 @@ BEHAVIORAL_INFO = {
             lambda x: x
         ]
     },
-    'HVLT Recall': {
+    'hvlt_recall': {
         'files': {
             'Hopkins_Verbal_Learning_Test.csv': [
                 ['HVLTRT1', 'HVLTRT2', 'HVLTRT3']
             ]
         }
     },
-    'HVLT Recognition': {
+    'hvlt_recognition': {
         'files': {
             'Hopkins_Verbal_Learning_Test.csv': [
                 ['HVLTREC'],
@@ -68,7 +69,7 @@ BEHAVIORAL_INFO = {
             lambda x: -x
         ]
     },
-    'HVLT Retention': {
+    'hvlt_retention': {
         'files': {
             'Hopkins_Verbal_Learning_Test.csv': [
                 ['HVLTRDLY'],
@@ -84,7 +85,7 @@ BEHAVIORAL_INFO = {
         ],
         'joinfunc': np.prod
     },
-    'LNS': {
+    'lns': {
         'files': {
             'Letter_-_Number_Sequencing__PD_.csv': [
                 ['LNS1A', 'LNS1B', 'LNS1C', 'LNS2A', 'LNS2B', 'LNS2C', 'LNS3A',
@@ -93,7 +94,7 @@ BEHAVIORAL_INFO = {
             ]
         }
     },
-    'MOCA Unadjusted': {
+    'moca': {
         'files': {
             'Montreal_Cognitive_Assessment__MoCA_.csv': [
                 ['MCAALTTM', 'MCACUBE', 'MCACLCKC', 'MCACLCKN', 'MCACLCKH',
@@ -105,7 +106,7 @@ BEHAVIORAL_INFO = {
             ]
         }
     },
-    'PIGD': {
+    'pigd': {
         'files': {
             'MDS_UPDRS_Part_II__Patient_Questionnaire.csv': [
                 ['NP2WALK', 'NP2FREZ']
@@ -119,7 +120,7 @@ BEHAVIORAL_INFO = {
         ],
         'joinfunc': np.mean
     },
-    'QUIP': {
+    'quip': {
         'files': {
             'QUIP_Current_Short.csv': [
                 ['CNTRLGMB', 'TMGAMBLE'],
@@ -133,7 +134,7 @@ BEHAVIORAL_INFO = {
             np.any, np.any, np.any, np.any, np.sum
         ]
     },
-    'RBD': {
+    'rbd': {
         'files': {
             'REM_Sleep_Disorder_Questionnaire.csv': [
                 ['DRMVIVID', 'DRMAGRAC', 'DRMNOCTB', 'SLPLMBMV', 'SLPINJUR',
@@ -147,7 +148,7 @@ BEHAVIORAL_INFO = {
             np.sum, np.any
         ]
     },
-    'SCOPA AUT': {
+    'scopa_aut': {
         'files': {
             'SCOPA-AUT.csv': [
                 [f'SCAU{num}' for num in range(1, 22)],
@@ -159,21 +160,21 @@ BEHAVIORAL_INFO = {
             lambda x: 0.0 if x == 9.0 else x
         ]
     },
-    'SE ADL': {
+    'se_adl': {
         'files': {
             'Modified_Schwab_+_England_ADL.csv': [
                 ['MSEADLG']
             ]
         }
     },
-    'Semantic Fluency': {
+    'semantic_fluency': {
         'files': {
             'Semantic_Fluency.csv': [
                 ['VLTANIM', 'VLTVEG', 'VLTFRUIT']
             ]
         }
     },
-    'STAI State': {
+    'stai_state': {
         'files': {
             'State-Trait_Anxiety_Inventory.csv': [
                 ['STAIAD3', 'STAIAD4', 'STAIAD6', 'STAIAD7', 'STAIAD9',
@@ -187,7 +188,7 @@ BEHAVIORAL_INFO = {
             lambda x: 5 - x
         ]
     },
-    'STAI Trait': {
+    'stai_trait': {
         'files': {
             'State-Trait_Anxiety_Inventory.csv': [
                 ['STAIAD22', 'STAIAD24', 'STAIAD25', 'STAIAD28', 'STAIAD29',
@@ -202,14 +203,14 @@ BEHAVIORAL_INFO = {
             lambda x: 5 - x
         ]
     },
-    'Symbol Digit': {
+    'symbol_digit': {
         'files': {
             'Symbol_Digit_Modalities.csv': [
                 ['SDMTOTAL']
             ]
         }
     },
-    'Systolic BP Drop': {
+    'systolic_bp_drop': {
         'files': {
             'Vital_Signs.csv': [
                 ['SYSSUP'],
@@ -221,7 +222,7 @@ BEHAVIORAL_INFO = {
             lambda x: -x
         ]
     },
-    'Tremor': {
+    'tremor': {
         'files': {
             'MDS_UPDRS_Part_II__Patient_Questionnaire.csv': [
                 ['NP2TRMR']
@@ -236,7 +237,7 @@ BEHAVIORAL_INFO = {
         ],
         'joinfunc': np.nanmean
     },
-    'UPDRS I': {
+    'updrs_i': {
         'files': {
             'MDS_UPDRS_Part_I.csv': [
                 ['NP1COG', 'NP1HALL', 'NP1DPRS', 'NP1ANXS', 'NP1APAT',
@@ -251,7 +252,7 @@ BEHAVIORAL_INFO = {
             'PATNO', 'EVENT_ID', 'INFODT'
         ],
     },
-    'UPDRS II': {
+    'updrs_ii': {
         'files': {
             'MDS_UPDRS_Part_II__Patient_Questionnaire.csv': [
                 ['NP2SPCH', 'NP2SALV', 'NP2SWAL', 'NP2EAT', 'NP2DRES',
@@ -260,7 +261,7 @@ BEHAVIORAL_INFO = {
             ]
         }
     },
-    'UPDRS III': {
+    'updrs_iii': {
         'files': {
             'MDS_UPDRS_Part_III.csv': [
                 ['NP3SPCH', 'NP3FACXP', 'NP3RIGN', 'NP3RIGRU', 'NP3RIGLU',
@@ -273,7 +274,7 @@ BEHAVIORAL_INFO = {
             ]
         }
     },
-    'UPDRS IV': {
+    'updrs_iv': {
         'files': {
             'MDS_UPDRS_Part_IV.csv': [
                 ['NP4WDYSK', 'NP4DYSKI', 'NP4OFF', 'NP4FLCTI', 'NP4FLCTX',
@@ -281,7 +282,7 @@ BEHAVIORAL_INFO = {
             ]
         }
     },
-    'UPSIT': {
+    'upsit': {
         'files': {
             'University_of_Pennsylvania_Smell_ID_Test.csv': [
                 ['UPSITBK1', 'UPSITBK2', 'UPSITBK3', 'UPSITBK4']
@@ -291,24 +292,27 @@ BEHAVIORAL_INFO = {
 }
 
 DEMOGRAPHIC_INFO = {
-    'DIAGNOSIS': {
+    'diagnosis': {
         'files': {
-            'Screening___Demographics.csv': 'APPRDX'
+            'Patient_Status.csv': 'ENROLL_CAT'
         },
         'replace': {
             'input': {
-                1: 'PD',
-                2: 'HC',
-                3: 'SWEDD',
-                4: 'PROD',
-                5: 'GC_PD',
-                6: 'GC_HC',
-                7: 'GR_PD',
-                8: 'GR_HC'
+                'PD': 'pd',
+                'HC': 'hc',
+                'SWEDD': 'swedd',
+                'PRODROMA': 'prod',
+                'GENPD': 'genpd',
+                'GENUN': 'genun',
+                'REGPD': 'regpd',
+                'REGUN': 'regun'
             }
+        },
+        'astype': {
+            'input': 'category'
         }
     },
-    'BIRTH_DATE': {
+    'date_birth': {
         'files': {
             'Randomization_table.csv': 'BIRTHDT'
         },
@@ -316,7 +320,7 @@ DEMOGRAPHIC_INFO = {
             'input': pd.to_datetime
         }
     },
-    'DIAGNOSIS_DATE': {
+    'date_diagnosis': {
         'files': {
             'PD_Features.csv': 'PDDXDT'
         },
@@ -324,7 +328,7 @@ DEMOGRAPHIC_INFO = {
             'input': pd.to_datetime
         }
     },
-    'ENROLL_DATE': {
+    'date_enroll': {
         'files': {
             'Randomization_table.csv': 'ENROLLDT'
         },
@@ -332,7 +336,12 @@ DEMOGRAPHIC_INFO = {
             'input': pd.to_datetime
         }
     },
-    'FAMILY_HISTORY': {
+    'status': {
+        'files': {
+            'Patient_status.csv': 'ENROLL_STATUS'
+        }
+    },
+    'family_history': {
         'files': {
             'Family_History__PD_.csv': [
                 'BIOMOMPD',
@@ -354,14 +363,9 @@ DEMOGRAPHIC_INFO = {
         },
         'astype': {
             'input': 'bool'
-        },
-        'replace': {
-            'input': {
-                True: 1, False: 0
-            }
         }
     },
-    'AGE': {
+    'age': {
         'files': {
             'Randomization_table.csv': [
                 'BIRTHDT',
@@ -384,20 +388,23 @@ DEMOGRAPHIC_INFO = {
             'input': np.timedelta64(1, 'Y')
         }
     },
-    'GENDER': {
+    'gender': {
         'files': {
             'Randomization_table.csv': 'GENDER'
         },
         'replace': {
             'input': {
-                0: 'F',
-                1: 'F',
-                2: 'M',
-                np.nan: 'NS'
+                0: 'f',
+                1: 'f',
+                2: 'm',
+                np.nan: 'ns'
             }
+        },
+        'astype': {
+            'input': 'category'
         }
     },
-    'RACE': {
+    'race': {
         'files': {
             'Screening___Demographics.csv': [
                 'RAINDALS',
@@ -413,39 +420,111 @@ DEMOGRAPHIC_INFO = {
             'kwargs': {'axis': 1}
         },
         'transform': {
-            'input': lambda x: x[0][0] if len(x[0]) == 1 else 'MULTI'
+            'input': lambda x: x[0][0] if len(x[0]) == 1 else 'multi'
         },
         'replace': {
             'input': {
-                0: 'INDALS',
-                1: 'ASIAN',
-                2: 'BLACK',
-                3: 'HAWOPI',
-                4: 'WHITE',
-                5: 'NOTSPECIFIED'
+                0: 'indals',
+                1: 'asian',
+                2: 'black',
+                3: 'hawopi',
+                4: 'white',
+                5: 'ns'
             }
+        },
+        'astype': {
+            'input': 'category'
         }
     },
-    'SITE': {
+    'site': {
         'files': {
             'Center-Subject_List.csv': 'CNO'
         }
     },
-    'HANDEDNESS': {
+    'handedness': {
         'files': {
             'Socio-Economics.csv': 'HANDED'
         },
         'replace': {
             'input': {
-                1: 'RIGHT',
-                2: 'LEFT',
-                3: 'BOTH'
+                1: 'right',
+                2: 'left',
+                3: 'both'
             }
+        },
+        'astype': {
+            'input': 'category'
         }
     },
-    'EDUCATION': {
+    'education': {
         'files': {
             'Socio-Economics.csv': 'EDUCYRS'
         }
     },
 }
+
+
+VISITS = cdtype([
+    'SC',
+    'RS1',
+    'BL',
+    'V01',
+    'V02',
+    'T06',
+    'V03',
+    'V04',
+    'T12',
+    'T15',
+    'T17',
+    'V05',
+    'T18',
+    'T19',
+    'T21',
+    'V06',
+    'T24',
+    'T27',
+    'V07',
+    'T30',
+    'T33',
+    'V08',
+    'T36',
+    'T39',
+    'V09',
+    'T42',
+    'T45',
+    'V10',
+    'T48',
+    'T51',
+    'V11',
+    'T54',
+    'T57',
+    'V12',
+    'T60',
+    'V13',
+    'T72',
+    'P78',
+    'V14',
+    'T84',
+    'P90',
+    'V15',
+    'T96',
+    'P102',
+    'V16',
+    'T108',
+    'P114',
+    'V17',
+    'P126',
+    'V18',
+    'T132',
+    'P138',
+    'V19',
+    'P150',
+    'V20',
+    'T156',
+    'U01',
+    'U02',
+    'U03',
+    'U04',
+    'U05',
+    'U06',
+], ordered=True)
