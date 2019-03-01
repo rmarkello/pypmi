@@ -5,7 +5,6 @@ Functions for loading data downloaded from the PPMI database
 
 from functools import reduce
 import itertools
-import os
 import os.path as op
 import re
 from typing import List
@@ -14,56 +13,7 @@ import numpy as np
 import pandas as pd
 
 from ._info import BEHAVIORAL_INFO, DEMOGRAPHIC_INFO, VISITS
-
-
-def _get_data_dir(path: str = None,
-                  fnames: List[str] = None) -> str:
-    """
-    Gets `path` to PPMI data directory, searching environment if necessary
-
-    Will optionally check whether supplied `fnames` are present at `path`
-
-    Parameters
-    ----------
-    path : str, optional
-        Filepath to directory containing PPMI data files. If not specified this
-        function will, in order, look (1) for an environmental variable
-        $PPMI_PATH and (2) in the current directory. Default: None
-    fnames : list, optional
-        Filenames to check for at `path` (once `path` has been determined). If
-        any of the files listed in `fnames` do not exist a FileNotFoundError
-        will be raised.
-
-    Returns
-    -------
-    path : str
-        Filepath to directory containing PPMI data files
-
-    Raises
-    ------
-    FileNotFoundError
-    """
-
-    # try and find directory in environmental variable "$PPMI_PATH"
-    if path is None:
-        try:
-            path = os.environ['PPMI_PATH']
-        except KeyError:
-            path = os.getcwd()
-
-    if fnames is not None:
-        for fn in fnames:
-            if not op.isfile(op.join(path, fn)):
-                raise FileNotFoundError('{} does not exist in {}. Please make '
-                                        'sure you have downloaded the '
-                                        'appropriate files from the PPMI '
-                                        'database and try again. You can use '
-                                        '`pypmi.datasets.fetch_studydata(\'all'
-                                        '\')` to automatically download all '
-                                        'required data files.'
-                                        .format(fn, path))
-
-    return path
+from .utils import _get_data_dir
 
 
 def load_biospecimen(path: str = None,

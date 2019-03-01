@@ -8,62 +8,18 @@ import json
 import os
 from pkg_resources import resource_filename
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List
 import zipfile
 
 import requests
 from tqdm import tqdm
 
+from .utils import _get_authentication, _get_data_dir
+
 with open(resource_filename('pypmi', 'data/studydata.json'), 'r') as src:
     _STUDYDATA = json.load(src)
 with open(resource_filename('pypmi', 'data/genetics.json'), 'r') as src:
     _GENETICS = json.load(src)
-
-
-def _get_authentication(user: str = None,
-                        password: str = None) -> Tuple[str, str]:
-    """
-    Gets PPMI authentication from environmental variables if not supplied
-
-    Parameters
-    ----------
-    user : str, optional
-        Email for user authentication to the LONI IDA database. If not supplied
-        will look for $PPMI_USER variable in environment. Default: None
-    password : str, optional
-        Password for user authentication to the LONI IDA database. If not
-        supplied will look for $PPMI_PASSWORD variable in environment. Default:
-        None
-
-    Returns
-    -------
-    user, password : str
-        Authentication for PPMI database
-    """
-
-    var = env = None
-
-    # try and find user in environmental variable "$PPMI_USER"
-    if user is None:
-        try:
-            user = os.environ['PPMI_USER']
-        except KeyError:
-            var, env = 'user', 'PPMI_USER'
-
-    # try and find password in environmental variable "$PPMI_PASSWORD"
-    if password is None:
-        try:
-            password = os.environ['PPMI_PASSWORD']
-        except KeyError:
-            var, env = 'password', 'PPMI_PASSWORD'
-
-    if var is not None or env is not None:
-        raise ValueError('No `{0}` ID supplied and cannot find {0} in '
-                         'local environment. Either supply `{0}` keyword '
-                         'argument directly or set environmental variable '
-                         '${1}.'.format(var, env))
-
-    return user, password
 
 
 def _get_download_params(user: str = None,
@@ -144,7 +100,8 @@ def _download_data(info: Dict[str, Dict[str, str]],
     path : str, optional
         Filepath where downloaded data should be saved. If data files already
         exist at `path` they will be overwritten unless `overwrite=False`. If
-        not supplied the current directory is used. Default: None
+        not specified will look for an environmental variable $PPMI_PATH and,
+        if not set, use the current directory. Default: None
     user : str, optional
         Email for user authentication to the LONI IDA database. If not supplied
         will look for $PPMI_USER variable in environment. Default: None
@@ -165,8 +122,7 @@ def _download_data(info: Dict[str, Dict[str, str]],
     """
 
     params = dict(type='GET_FILES', userId=None, authKey=None, fileId=[])
-    if path is None:
-        path = os.getcwd()
+    path = _get_data_dir(path)
 
     # check provided credentials; if none were supplied, look for creds in
     # user environmental variables
