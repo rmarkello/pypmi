@@ -27,8 +27,8 @@ Functions for downloading datasets from the PPMI database:
    :template: function.rst
    :toctree:  generated/
 
-    available_studydata
-    available_genetics
+    fetchable_studydata
+    fetchable_genetics
     fetch_studydata
     fetch_genetics
 

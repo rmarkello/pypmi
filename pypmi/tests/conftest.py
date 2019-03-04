@@ -15,5 +15,5 @@ def studydata(datadir):
     # download data (don't overwrite if we already did it)
     datasets.fetch_studydata('all', path=datadir, overwrite=False)
     # check to make sure all the datasets were downloaded correctly
-    assert len(os.listdir(datadir)) == len(datasets.available_studydata())
+    assert len(os.listdir(datadir)) == len(datasets.fetchable_studydata())
     return datadir

@@ -218,7 +218,7 @@ def _download_data(info: Dict[str, Dict[str, str]],
     return downloaded
 
 
-def available_studydata() -> List[str]:
+def fetchable_studydata() -> List[str]:
     """
     Lists study data available to download from the PPMI
 
@@ -231,7 +231,7 @@ def available_studydata() -> List[str]:
     return list(_STUDYDATA.keys())
 
 
-def available_genetics(projects: bool = False) -> List[str]:
+def fetchable_genetics(projects: bool = False) -> List[str]:
     """
     Lists genetics data available to download from the PPMI
 
@@ -270,7 +270,7 @@ def fetch_studydata(*datasets: str,
     ----------
     *datasets : str
         Datasets to download. Can provide as many as desired, but they should
-        be listed in :py:func:`pypmi.datasets.available_studydata()`.
+        be listed in :py:func:`pypmi.datasets.fetchable_studydata()`.
         Alternatively, if any of the provided values are 'all', then all
         available datasets will be fetched.
     path : str, optional
@@ -300,7 +300,7 @@ def fetch_studydata(*datasets: str,
 
     # take subset of available study data based on requested `datasets`
     if 'all' in datasets:
-        datasets = available_studydata()
+        datasets = fetchable_studydata()
     info = {dset: _STUDYDATA.get(dset) for dset in datasets}
 
     return _download_data(info, url, path=path, user=user, password=password,
@@ -320,7 +320,7 @@ def fetch_genetics(*datasets: str,
     ----------
     *datasets : str
         Datasets to download. Can provide as many as desired, but they should
-        be listed in :py:func:`pypmi.datasets.available_genetics()`.
+        be listed in :py:func:`pypmi.datasets.fetchable_genetics()`.
         Alternatively, if any of the provided values are 'all', then all
         available datasets will be fetched.
     path : str, optional
@@ -350,9 +350,9 @@ def fetch_genetics(*datasets: str,
 
     # take subset of available genetics data based on requested `datasets`
     if 'all' in datasets:
-        datasets = available_genetics(projects=False)
+        datasets = fetchable_genetics(projects=False)
     # check for project designations in requested data
-    for project in available_genetics(projects=True):
+    for project in fetchable_genetics(projects=True):
         if project in datasets:
             datasets.remove(project)
             datasets += [f for f in _GENETICS.keys() if project in f.lower()]
