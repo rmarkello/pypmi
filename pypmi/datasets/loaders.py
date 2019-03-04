@@ -64,7 +64,7 @@ def load_biospecimen(path: str = None,
     if measures is None:
         measures = ['abeta_1-42', 'csf_alpha-synuclein', 'ptau', 'ttau']
     elif isinstance(measures, str) and measures == 'all':
-        measures = data['test'].unique()
+        measures = data['test'].unique().tolist()
     data = data.query(f'test in {measures}')
 
     # convert to tidy dataframe (if lots of measures this takes a while...)
@@ -193,7 +193,9 @@ def available_datscan(path: str = None) -> List[str]:
 
     # only need first line!
     with open(path, 'r') as src:
-        return src.readline().strip().replace('"', '').split(',')[2:]
+        data = src.readline().strip().replace('"', '').split(',')[2:]
+
+    return [f.lower() for f in data]
 
 
 def load_behavior(path: str = None,
@@ -288,7 +290,7 @@ def load_behavior(path: str = None,
 
     # coerce data types to desired format
     tidy['participant'] = tidy['participant'].astype(int)
-    tidy['visit'] = tidy['visit'].astype(str)
+    tidy['visit'] = tidy['visit'].astype(VISITS)
     tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y')
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
