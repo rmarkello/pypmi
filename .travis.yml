@@ -23,9 +23,11 @@ matrix:
     - python: 3.6
       env:
         - INSTALL_TYPE=sdist
+        - CHECK_TYPE=test
     - python: 3.6
       env:
         - INSTALL_TYPE=wheel
+        - CHECK_TYPE=test
 
 before_install:
   - python -m pip install --upgrade pip
