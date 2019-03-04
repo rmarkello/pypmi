@@ -339,6 +339,9 @@ DEMOGRAPHIC_INFO = {
     'status': {
         'files': {
             'Patient_Status.csv': 'ENROLL_STATUS'
+        },
+        'apply': {
+            'input': lambda x: x.lower()
         }
     },
     'family_history': {

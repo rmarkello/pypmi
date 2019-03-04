@@ -5,7 +5,7 @@ Functions for loading data downloaded from the PPMI database
 
 from functools import reduce
 import itertools
-import os.path as op
+import os
 import re
 from typing import List
 
@@ -47,24 +47,15 @@ def load_biospecimen(path: str = None,
     pypmi.datasets.available_biospecimen
     """
 
-    rename_cols = dict(
-        PATNO='participant',
-        CLINICAL_EVENT='visit',
-        TESTNAME='test',
-        TESTVALUE='score'
-    )
-    dtype = dict(
-        PATNO=str,
-        CLINICAL_EVENT=VISITS,
-        TESTNAME=str,
-        TESTVALUE=str
-    )
+    rename_cols = dict(PATNO='participant', CLINICAL_EVENT='visit',
+                       TESTNAME='test', TESTVALUE='score')
+    dtype = dict(PATNO=int, CLINICAL_EVENT=VISITS, TESTNAME=str, TESTVALUE=str)
 
     # check for file and get data directory path
     fname = 'Current_Biospecimen_Analysis_Results.csv'
-    path = op.join(_get_data_dir(path=path, fnames=[fname]), fname)
+    path = os.path.join(_get_data_dir(path=path, fnames=[fname]), fname)
 
-    # make scores numeric and clean up test names (no spaces!)
+    # load data, make scores numeric, and clean up test names (no spaces!)
     data = pd.read_csv(path, dtype=dtype).rename(columns=rename_cols)
     data['score'] = pd.to_numeric(data['score'], errors='coerce')
     data['test'] = data['test'].apply(lambda x: x.replace(' ', '_').lower())
@@ -72,7 +63,7 @@ def load_biospecimen(path: str = None,
     # keep only desired measures
     if measures is None:
         measures = ['abeta_1-42', 'csf_alpha-synuclein', 'ptau', 'ttau']
-    elif measures == 'all':
+    elif isinstance(measures, str) and measures == 'all':
         measures = data['test'].unique()
     data = data.query(f'test in {measures}')
 
@@ -80,6 +71,10 @@ def load_biospecimen(path: str = None,
     tidy = pd.pivot_table(data, index=['participant', 'visit'],
                           columns='test', values='score').reset_index()
     tidy = tidy.rename_axis(None, axis=1)
+
+    # (try to) add visit date information
+    tidy = _add_dates(tidy, path=os.path.dirname(path),
+                      fnames=['Lumbar_Puncture_Sample_Collection.csv'])
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
 
@@ -107,11 +102,11 @@ def available_biospecimen(path: str = None) -> List[str]:
 
     # check for file and get data directory path
     fname = 'Current_Biospecimen_Analysis_Results.csv'
-    path = op.join(_get_data_dir(path=path, fnames=[fname]), fname)
+    path = os.path.join(_get_data_dir(path=path, fnames=[fname]), fname)
 
     data = pd.read_csv(path, usecols=['TESTNAME'])
 
-    return [f.replace(' ', '_').lower() for f in data.TESTNAME.unique()]
+    return [f.replace(' ', '_').lower() for f in data['TESTNAME'].unique()]
 
 
 def load_datscan(path: str = None,
@@ -140,26 +135,23 @@ def load_datscan(path: str = None,
     pypmi.datasets.available_datscan
     """
 
-    rename_cols = dict(
-        PATNO='participant',
-        EVENT_ID='visit'
-    )
-    dtype = dict(
-        PATNO=str,
-        EVENT_ID=VISITS
-    )
+    rename_cols = dict(PATNO='participant', EVENT_ID='visit')
+    dtype = dict(PATNO=int, EVENT_ID=VISITS)
 
     # check for file and get data directory path
     fname = 'DATScan_Analysis.csv'
-    path = op.join(_get_data_dir(path=path, fnames=[fname]), fname)
+    path = os.path.join(_get_data_dir(path=path, fnames=[fname]), fname)
 
     # load data and coerce into standard format
-    tidy = pd.read_csv(path, dtype=dtype).rename(columns=rename_cols)
+    raw = pd.read_csv(path, dtype=dtype)
+    tidy = raw.rename(columns=rename_cols).dropna(subset=['visit'])
     tidy.columns = [f.lower() for f in tidy.columns]
 
     # keep only desired measures
     if measures is not None:
-        if not isinstance(measures, list):
+        if isinstance(measures, str) and measures == 'all':
+            measures = available_datscan()
+        elif not isinstance(measures, list):
             measures = list(measures)
         for m in measures:
             if m not in tidy.columns:
@@ -167,6 +159,9 @@ def load_datscan(path: str = None,
                                  'see available datscan measures with `pypmi.'
                                  'datasets.available_datscan()`.'.format(m))
         tidy = tidy[['participant', 'visit'] + measures]
+
+    # (try to) add visit date information
+    tidy = _add_dates(tidy, path=os.path.dirname(path))
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
 
@@ -194,7 +189,7 @@ def available_datscan(path: str = None) -> List[str]:
 
     # check for file and get data directory path
     fname = 'DATScan_Analysis.csv'
-    path = op.join(_get_data_dir(path=path, fnames=[fname]), fname)
+    path = os.path.join(_get_data_dir(path=path, fnames=[fname]), fname)
 
     # only need first line!
     with open(path, 'r') as src:
@@ -227,14 +222,15 @@ def load_behavior(path: str = None,
     pypmi.datasets.available_behavior
     """
 
-    rename_cols = dict(
-        PATNO='participant',
-        EVENT_ID='visit'
-    )
+    rename_cols = dict(PATNO='participant', EVENT_ID='visit', INFODT='date')
 
     # determine measures
     if measures is not None:
-        beh_info = {d: v for d, v in BEHAVIORAL_INFO.items() if d in measures}
+        if isinstance(measures, str) and measures == 'all':
+            beh_info = BEHAVIORAL_INFO.items()
+        else:
+            beh_info = {d: v for d, v in BEHAVIORAL_INFO.items()
+                        if d in measures}
         if 'moca' not in beh_info.keys() and 'education' in beh_info.keys():
             del beh_info['education']
     else:
@@ -249,7 +245,7 @@ def load_behavior(path: str = None,
     df = pd.DataFrame()
     # iterate through all keys in dictionary
     for key, info in beh_info.items():
-        cextra = info.get('extra', ['PATNO', 'EVENT_ID', 'PAG_NAME'])
+        cextra = info.get('extra', ['PATNO', 'EVENT_ID', 'INFODT', 'PAG_NAME'])
         capply = info.get('applymap', itertools.repeat(lambda x: x))
         copera = info.get('operation', itertools.repeat(np.sum))
 
@@ -257,7 +253,7 @@ def load_behavior(path: str = None,
         # go through relevant files and items for current key and grab scores
         for fname, items in info['files'].items():
             # read in file
-            data = pd.read_csv(op.join(path, fname))
+            data = pd.read_csv(os.path.join(path, fname))
             # iterate through items to be retrieved and apply operations
             for n, (it, ap, ope) in enumerate(zip(items, capply, copera)):
                 score = ope(data[it].applymap(ap), axis=1)
@@ -275,12 +271,12 @@ def load_behavior(path: str = None,
         df = df.append(curr_df, ignore_index=True, sort=True)
 
     # rename post-treatment UDPRS III scores so there's no collision
-    # pivot_table would, by default, take the mean. we don't want that!
+    # pivot_table would average between the two by default. we don't want that!
     df.loc[df['PAG_NAME'] == "NUPDRS3A", 'test'] = 'updrs_iii_a'
 
     # clean up column names and convert to tidy dataframe
     df = df.rename(columns=rename_cols)
-    tidy = pd.pivot_table(df, index=['participant', 'visit'],
+    tidy = pd.pivot_table(df, index=['participant', 'visit', 'date'],
                           columns='test', values='score').reset_index()
     tidy = tidy.rename_axis(None, axis=1)
 
@@ -290,8 +286,10 @@ def load_behavior(path: str = None,
         tidy.loc[adjust, 'moca'] += tidy.loc[adjust, 'education'].fillna(0)
         tidy = tidy.drop(['education'], axis=1)
 
+    # coerce data types to desired format
     tidy['participant'] = tidy['participant'].astype(int)
-    tidy['visit'] = tidy['visit'].astype(VISITS)
+    tidy['visit'] = tidy['visit'].astype(str)
+    tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y')
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
 
@@ -334,6 +332,10 @@ def load_demographics(path: str = None,
         Filepath to directory containing PPMI data files. If not specified this
         function will, in order, look (1) for an environmental variable
         $PPMI_PATH and (2) in the current directory. Default: None
+    measures : list, optional
+        Which measures to keep in the final dataframe. If not specified all
+        measures are retained; available demographics measures can be viewed
+        with :py:func:`pypmi.datasets.available_demographics()`. Default: None
 
     Returns
     -------
@@ -345,14 +347,16 @@ def load_demographics(path: str = None,
     pypmi.datasets.available_demographics
     """
 
-    rename_cols = dict(
-        PATNO='participant',
-        EVENT_ID='visit'
-    )
+    rename_cols = dict(PATNO='participant', EVENT_ID='visit')
+    dtype = dict(PATNO=int)
 
     # determine measures
     if measures is not None:
-        dem_info = {d: v for d, v in DEMOGRAPHIC_INFO.items() if d in measures}
+        if isinstance(measures, str) and measures == 'all':
+            dem_info = DEMOGRAPHIC_INFO
+        else:
+            dem_info = {d: v for d, v in DEMOGRAPHIC_INFO.items()
+                        if d in measures}
     else:
         dem_info = DEMOGRAPHIC_INFO
 
@@ -364,10 +368,11 @@ def load_demographics(path: str = None,
 
     # empty data frame to hold information
     tidy = pd.DataFrame([], columns=['PATNO'])
-    # iterate through demographic info to get
+
+    # iterate through demographic info to wrangle
     for key, curr_key in dem_info.items():
         for n, (fname, items) in enumerate(curr_key['files'].items()):
-            data = pd.read_csv(op.join(path, fname), dtype=dict(PATNO=int))
+            data = pd.read_csv(os.path.join(path, fname), dtype=dtype)
             curr_score = data[items]
             for attr in [f for f in curr_key.keys() if f not in ['files']]:
                 if hasattr(curr_score, attr):
@@ -409,7 +414,8 @@ def available_demographics(path: str = None) -> List[str]:
     return list(DEMOGRAPHIC_INFO.keys())
 
 
-def load_dates(path: str = None) -> pd.DataFrame:
+def _load_dates(path: str = None,
+                fnames: List[str] = None) -> pd.DataFrame:
     """
     Loads visit date information into tidy dataframe
 
@@ -419,6 +425,11 @@ def load_dates(path: str = None) -> pd.DataFrame:
         Filepath to directory containing PPMI data files. If not specified this
         function will, in order, look (1) for an environmental variable
         $PPMI_PATH and (2) in the current directory. Default: None
+    fnames : list, optional
+        List of PPMI data files that may contain additional date information
+        beyond the "default" files used (i.e., Inclusion_Exclusion.csv,
+        Signature_Form.csv', Socio-Economics.csv, and Vital_Signs.csv). If not
+        specified only default files are used. Default: None
 
     Returns
     -------
@@ -428,24 +439,74 @@ def load_dates(path: str = None) -> pd.DataFrame:
         YYYY-MM-DD date
     """
 
-    rename_cols = dict(
-        PATNO='participant',
-        EVENT_ID='visit',
-        INFODT='date'
-    )
+    rename_cols = dict(PATNO='participant', EVENT_ID='visit', INFODT='date')
+    dtype = dict(PATNO=int, EVENT_ID=VISITS)
 
     # check for file and get data directory path
-    # vital signs are hypothetically supposed to be checked at every visit for
-    # all study participants, so this is the best that we can do!
-    fname = 'Vital_Signs.csv'
-    path = op.join(_get_data_dir(path=path, fnames=[fname]), fname)
+    # we use four files to try and capture as much "visit date" info:
+    files = [
+        'Inclusion_Exclusion.csv',
+        'Signature_Form.csv',
+        'Socio-Economics.csv',
+        'Vital_Signs.csv',
+    ]
+    # add additional files as needed by datatype and then get data path
+    if fnames is not None:
+        files += fnames
+    path = _get_data_dir(path=path, fnames=files)
 
     # load data and coerce into standard format
-    tidy = pd.read_csv(path, dtype=dict(PATNO=int, EVENT_ID=VISITS),
-                       parse_dates=['INFODT'], infer_datetime_format=True)
-    tidy = tidy.rename(columns=rename_cols)[rename_cols.values()]
+    raw = [pd.read_csv(os.path.join(path, f),
+                       dtype=dtype,
+                       usecols=rename_cols.keys()) for f in files]
+    tidy = (pd.concat(raw).rename(columns=rename_cols)
+                          .get(rename_cols.values())
+                          .dropna()
+                          .drop_duplicates(subset=['participant', 'visit']))
+    tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y')
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
+
+
+def _add_dates(df: pd.DataFrame,
+               path: str = None,
+               fnames: List[str] = None) -> pd.DataFrame:
+    """
+    Attempts to add visit date to information to dataframe `df`
+
+    If files required for visit date information cannot be found then `df` is
+    returned, unaltered
+
+    Parameters
+    ----------
+    df : :obj:`pandas.DataFrame`
+        Data frame to add date information to
+    path : str, optional
+        Filepath to directory containing PPMI data files. If not specified this
+        function will, in order, look (1) for an environmental variable
+        $PPMI_PATH and (2) in the current directory. Default: None
+    fnames : list, optional
+        List of PPMI data files that may contain additional date information
+        beyond the "default" files used (i.e., Inclusion_Exclusion.csv,
+        Signature_Form.csv', Socio-Economics.csv, and Vital_Signs.csv). If not
+        specified only default files are used. Default: None
+
+    Returns
+    -------
+    df : :obj:`pandas.DataFrame`
+        Provided `df` with new 'date' columns
+    """
+
+    try:
+        tidy = pd.merge(df, _load_dates(path=path, fnames=fnames),
+                        on=['participant', 'visit'], how='left')
+        # reorder columns so that 'participant', 'visit', and 'date' are first
+        cols = ['participant', 'visit', 'date']
+        tidy = tidy[cols + np.setdiff1d(tidy.columns, cols).tolist()]
+    except FileNotFoundError:
+        pass
+
+    return tidy
 
 
 def load_genetics(fname: str,

@@ -42,7 +42,6 @@ Functions for loading data from PPMI database into tidy dataframes:
     load_biospecimen
     load_datscan
     load_demographics
-    load_dates
 
 Functions for listing measures available from relevant
 ``pypmi.datasets.load_X()`` commands:
