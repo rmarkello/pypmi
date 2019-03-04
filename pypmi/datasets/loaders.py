@@ -227,7 +227,7 @@ def load_behavior(path: str = None,
     # determine measures
     if measures is not None:
         if isinstance(measures, str) and measures == 'all':
-            beh_info = BEHAVIORAL_INFO.items()
+            beh_info = BEHAVIORAL_INFO
         else:
             beh_info = {d: v for d, v in BEHAVIORAL_INFO.items()
                         if d in measures}
