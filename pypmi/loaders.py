@@ -461,7 +461,7 @@ def _load_dates(path: str = None,
                        dtype=dtype,
                        usecols=rename_cols.keys()) for f in files]
     tidy = (pd.concat(raw).rename(columns=rename_cols)
-                          .get(rename_cols.values())
+                          .get(list(rename_cols.values()))
                           .dropna()
                           .drop_duplicates(subset=['participant', 'visit']))
     tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y')
