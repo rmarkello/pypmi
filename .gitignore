@@ -6,7 +6,6 @@ __pycache__/
 .pytest_cache/
 .vscode/
 _build/
-_static/
 build/
 dist/
 generated/

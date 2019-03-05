@@ -42,10 +42,7 @@ Alternatively, you can use the `pypmi` API to download the data programatically:
 
 ```python
 >>> import pypmi
->>> pypmi.fetch_studydata('all', user='username', password='password');
-Fetching authentication key for data download...
-Requesting 113 datasets for download...
-Downloading PPMI data: 17.3MB [00:33, 519kB/s]
+>>> pypmi.fetch_studydata('all', user='username', password='password')
 ```
 
 By default, the data will be downloaded to your current directory making it easy to load them in the future, but you can optionally provide a `path` argument to `pypmi.fetch_studydata()` to specify where you would like the data to go.
