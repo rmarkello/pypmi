@@ -3,8 +3,12 @@
 Code for preparing raw PPMI neuroimaging data to be converted to BIDS format
 with heudiconv.
 """
+
+from os import PathLike
 import pathlib
 from pkg_resources import resource_filename
+from typing import List, Union
+
 import pandas as pd
 
 # get list of sessions that won't convert for whatever reason
@@ -12,7 +16,8 @@ BAD_SCANS = pd.read_csv(resource_filename('pypmi', 'data/sessions.txt'))
 HEURISTIC = resource_filename('pypmi', 'data/heuristic.py')
 
 
-def _prepare_subject(subj_dir, timeout=None):
+def _prepare_subject(subj_dir: Union[str, PathLike],
+                     timeout: Union[str, PathLike] = None) -> str:
     """
     Reorganizes `subj_dir` to structure more compatible with ``heudiconv``
 
@@ -78,7 +83,8 @@ def _prepare_subject(subj_dir, timeout=None):
     return subj_dir.name
 
 
-def _prepare_directory(data_dir, ignore_bad=True):
+def _prepare_directory(data_dir: Union[str, PathLike],
+                       ignore_bad: bool = True) -> List[str]:
     """
     Reorganizes PPMI `data_dir` to a structure compatible with ``heudiconv``
 
@@ -135,7 +141,9 @@ def _prepare_directory(data_dir, ignore_bad=True):
     return subjects
 
 
-def convert_ppmi(raw_dir, out_dir, ignore_bad=True):
+def convert_ppmi(raw_dir: Union[str, PathLike],
+                 out_dir: Union[str, PathLike],
+                 ignore_bad: bool = True) -> pathlib.Path:
     """
     Converts PPMI DICOMs in `raw_dir` to BIDS dataset at `out_dir`
 

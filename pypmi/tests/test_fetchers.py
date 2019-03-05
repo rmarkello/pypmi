@@ -2,7 +2,7 @@
 
 import pytest
 
-from pypmi.datasets import fetchers
+from pypmi import fetchers
 
 
 def test_get_authentication():
@@ -36,10 +36,10 @@ def test_get_download_params():
     assert fetchers._get_download_params('baduser', 'badpass') is None
 
 
-def test_available_studydata():
+def test_fetchable_studydata():
     # 113 datasets available, should get a list of them
-    assert isinstance(fetchers.available_studydata(), list)
-    assert len(fetchers.available_studydata()) == 113
+    assert isinstance(fetchers.fetchable_studydata(), list)
+    assert len(fetchers.fetchable_studydata()) == 113
 
 
 @pytest.mark.parametrize(('datasets', 'expected'), [

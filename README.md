@@ -1,10 +1,10 @@
 # PyPMI
 
-This package provides a Python interface for working with data from the [Parkinson's Progression Markers Initiative](http://www.ppmi-info.org/) (PPMI).
+This package provides a Python interface for working with data from the [Parkinson's Progression Markers Initiative](https://www.ppmi-info.org/) (PPMI).
 
 ## Installation and setup
 
-This package requires Python >= 3.5.
+This package requires Python >= 3.6.
 If you have the correct version of Python installed, you can install this package by opening a terminal and running the following:
 
 ```bash
@@ -19,12 +19,12 @@ Some of the functionality of this package&mdash;primarily, the functions to work
 
 The PPMI is an ongoing longitudinal study that begin in early 2010 with the primary goal of identifying biomarkers of Parkinson's disease (PD) progression.
 To date, the PPMI has collected data from over 400 individuals with de novo PD and nearly 200 age-matched healthy participants, in addition to large cohorts of individuals genetically at-risk for PD.
-Data, made available on the [PPMI website](http://www.ppmi-info.org/data), include comphrensive clinical-behavioral assessments, biological assays, single-photon emission computed tomography (SPECT) images, and magnetic resonance imaging (MRI) scans.
+Data, made available on the [PPMI website](https://www.ppmi-info.org/data), include comphrensive clinical-behavioral assessments, biological assays, single-photon emission computed tomography (SPECT) images, and magnetic resonance imaging (MRI) scans.
 
 While accessing this data is straightforward (researchers must simply sign a data usage agreement and provide information on the purpose of their research), the sheer amount of data made available can be quite overwhelming to work with.
 Thus, the primary goal of this package is to provide a Python interface to making working with the data provided by the PPMI easier.
 While this project is still very much **under development**, it is neverthless functional!
-Most useful may be the functions contained in `pypmi.datasets`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `pypmi.bids`, which helps convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
+Most useful may be the functions accesible by directly importing `pypmi`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `pypmi.bids`, which helps convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
 
 I hope to continue adding useful features to this package as I keep working with the data, but take a look below at [development and getting involved](#development-and-getting-involved) if you're interested in contributing, yourself!
 
@@ -41,30 +41,66 @@ Once you have access to the [PPMI database](https://www.ppmi-info.org/access-dat
 Alternatively, you can use the `pypmi` API to download the data programatically:
 
 ```python
->>> from pypmi import datasets
->>> filepath = '/where/to/save/downloaded/data
->>> datasets.fetch_studydata('all', path=filepath, user='PPMI_USERNAME', password='PPMI_PASSWORD')
->>> data = datasets.load_studydata(filepath)
->>> data.columns
-Index(['PARTICIPANT', 'DIAGNOSIS', 'GENDER', 'RACE', 'AGE', 'FAMILY_HISTORY',
-       'HANDEDNESS', 'EDUCATION', 'SYMPTOM_DURATION', 'SITE', 'VISIT',
-       'VISIT_DATE', 'PAG_NAME', 'TEST', 'SCORE'],
+>>> import pypmi
+>>> pypmi.fetch_studydata('all', user='username', password='password');
+Fetching authentication key for data download...
+Requesting 113 datasets for download...
+Downloading PPMI data: 17.3MB [00:33, 519kB/s]
+```
+
+By default, the data will be downloaded to your current directory making it easy to load them in the future, but you can optionally provide a `path` argument to `pypmi.fetch_studydata()` to specify where you would like the data to go.
+(Alternatively, you can set an environmental variable `$PPMI_PATH` to specify where they should be downloaded to; this takes precedence over the current directory.)
+
+Once you have the data downloaded you can load some of it as a [tidy](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html) [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html):
+
+```python
+>>> behavior = pypmi.load_behavior()
+>>> behavior.columns
+Index(['participant', 'visit', 'date', 'benton', 'epworth', 'gds',
+       'hvlt_recall', 'hvlt_recognition', 'hvlt_retention', 'lns', 'moca',
+       'pigd', 'quip', 'rbd', 'scopa_aut', 'se_adl', 'semantic_fluency',
+       'stai_state', 'stai_trait', 'symbol_digit', 'systolic_bp_drop',
+       'tremor', 'updrs_i', 'updrs_ii', 'updrs_iii', 'updrs_iii_a', 'updrs_iv',
+       'upsit'],
       dtype='object')
 ```
 
-The call to `pypmi.load_studydata()` may take a few seconds to run&mdash;there's a lot of data to import!
-The `data` object returned is a hybrid [wide/narrow](https://en.wikipedia.org/wiki/Wide_and_narrow_data) format [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html), and can be queried in a number of useful ways:
+The call to `pypmi.load_behavior()` may take a few seconds to run&mdash;there's a lot of data to import!
+
+If we want to query the data with regards to diagnosis it might be useful to load in some demographic information:
 
 ```python
-# how many PD participants do we have a MOCA score for at screening?
->>> len(data.query('DIAGNOSIS == "PD" & TEST == "MOCA" & VISIT == "SC"'))
+>>> demographics = pypmi.load_demographics()
+>>> demographics.columns
+Index(['participant', 'diagnosis', 'date_birth', 'date_diagnosis',
+       'date_enroll', 'status', 'family_history', 'age', 'gender', 'race',
+       'site', 'handedness', 'education'],
+      dtype='object')
+```
+
+Now we can perform some interesting queries!
+As an example, let's just ask how many individuals with Parkinson's disease have a baseline UPDRS III score.
+We'll have to use information from both data frames to answer the question:
+
+```python
+>>> import pandas as pd
+>>> updrs = (behavior.query('visit == "BL" & ~updrs_iii.isna()')
+...                  .get(['participant', 'updrs_iii']))
+>>> parkinsons = demographics.query('diagnosis == "pd"').get('participant')
+>>> len(pd.merge(parkinsons, updrs, on='participant'))
 423
-# and for control participants?
->>> len(data.query('DIAGNOSIS == "HC" & TEST == "MOCA" & VISIT == "SC"'))
-196
+```
+
+And the same for healthy individuals:
+
+```python
+>>> healthy = demographics.query('diagnosis == "hc"').get('participant')
+>>> len(pd.merge(healthy, updrs))
+195
 ```
 
 There's a lot of power gained in leveraging the pandas DataFrame objects, so take a look at the [pandas documentation](https://pandas.pydata.org/) to see what more you can do!
+Also be sure to check out the [`pypmi` documentation](https://pypmi.readthedocs.io) for more information.
 
 ## Development and getting involved
 
@@ -78,8 +114,8 @@ Alternatively, if you've found a bug, are experience a problem, or have a questi
 
 ## Acknowledgments
 
-This package relies on data that can be obtained from the Parkinson's Progression Markers Initiative (PPMI) database [http://www.ppmi-info.org/data](http://www.ppmi-info.org/data).
-For up-to-date information on the study, visit [http://www.ppmi-info.org/](http://www.ppmi-info.org/)
+This package relies on data that can be obtained from the Parkinson's Progression Markers Initiative (PPMI) database [https://www.ppmi-info.org/data](https://www.ppmi-info.org/data).
+For up-to-date information on the study, visit [https://www.ppmi-info.org/](https://www.ppmi-info.org/)
 
 The PPMI&mdash;a public-private partnership&mdash;is funded by the Michael J. Fox Foundation for Parkinson’s Research and funding partners, including AbbVie, Avid Radiopharmaceuticals, Biogen, BioLegend, Bristol-Myers Squibb, GE Healthcare, Genentech, GlaxoSmithKline (GSK), Eli Lilly and Company, Lundbeck, Merck, Meso Scale Discovery (MSD), Pfizer, Piramal Imaging, Roche, Sanofi Genzyme, Servier, Takeda, Teva, and UCB [www.ppmi-info.org/fundingpartners](www.ppmi-info.org/fundingpartners).
 

@@ -2,7 +2,7 @@
 
 import os
 import pytest
-from pypmi import datasets
+import pypmi
 
 
 @pytest.fixture(scope='session')
@@ -13,7 +13,7 @@ def datadir(tmpdir_factory):
 @pytest.fixture(scope='session')
 def studydata(datadir):
     # download data (don't overwrite if we already did it)
-    datasets.fetch_studydata('all', path=datadir, overwrite=False)
+    pypmi.fetch_studydata('all', path=datadir, overwrite=False)
     # check to make sure all the datasets were downloaded correctly
-    assert len(os.listdir(datadir)) == len(datasets.available_studydata())
+    assert len(os.listdir(datadir)) == len(pypmi.fetchable_studydata())
     return datadir
