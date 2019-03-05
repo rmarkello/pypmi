@@ -226,6 +226,10 @@ def fetchable_studydata() -> List[str]:
     -------
     available : list
         List of available data files
+
+    See Also
+    --------
+    pypmi.fetch_studydata
     """
 
     return list(_STUDYDATA.keys())
@@ -249,6 +253,10 @@ def fetchable_genetics(projects: bool = False) -> List[str]:
     -------
     available : list
         List of available data files
+
+    See Also
+    --------
+    pypmi.fetch_genetics
     """
 
     if projects:
@@ -270,9 +278,9 @@ def fetch_studydata(*datasets: str,
     ----------
     *datasets : str
         Datasets to download. Can provide as many as desired, but they should
-        be listed in :py:func:`pypmi.datasets.fetchable_studydata()`.
-        Alternatively, if any of the provided values are 'all', then all
-        available datasets will be fetched.
+        be listed in :py:func:`pypmi.fetchable_studydata`. Alternatively, if
+        any of the provided values are 'all', then all available datasets will
+        be fetched.
     path : str, optional
         Filepath where downloaded data should be saved. If data files already
         exist at `path` they will be overwritten unless `overwrite=False`. If
@@ -294,6 +302,10 @@ def fetch_studydata(*datasets: str,
     -------
     downloaded : list
         Filepath(s) to downloaded datasets
+
+    See Also
+    --------
+    pypmi.fetchable_studydata
     """
 
     url = "https://utilities.loni.usc.edu/download/study"
@@ -320,9 +332,9 @@ def fetch_genetics(*datasets: str,
     ----------
     *datasets : str
         Datasets to download. Can provide as many as desired, but they should
-        be listed in :py:func:`pypmi.datasets.fetchable_genetics()`.
-        Alternatively, if any of the provided values are 'all', then all
-        available datasets will be fetched.
+        be listed in :py:func:`pypmi.fetchable_genetics`. Alternatively, if any
+        of the provided values are 'all', then all available datasets will be
+        fetched.
     path : str, optional
         Filepath where downloaded data should be saved. If data files already
         exist at `path` they will be overwritten unless `overwrite=False`. If
@@ -344,6 +356,10 @@ def fetch_genetics(*datasets: str,
     -------
     downloaded : list
         Filepath(s) to downloaded datasets
+
+    See Also
+    --------
+    pypmi.fetchable_genetics
     """
 
     url = "https://utilities.loni.usc.edu/download/genetic"

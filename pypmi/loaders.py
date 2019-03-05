@@ -34,8 +34,7 @@ def load_biospecimen(path: str = None,
         are kept. Specifying `measures='all'` will retain everything, but this
         will significantly increase load time. It is highly recommended to
         specify which measures to keep; available biospecimen measures can be
-        viewed with :py:func:`pypmi.datasets.available_biospecimen()`. Default:
-        None
+        viewed with :py:func:`pypmi.available_biospecimen`. Default: None
 
     Returns
     -------
@@ -44,7 +43,7 @@ def load_biospecimen(path: str = None,
 
     See Also
     --------
-    pypmi.datasets.available_biospecimen
+    pypmi.available_biospecimen
     """
 
     rename_cols = dict(PATNO='participant', CLINICAL_EVENT='visit',
@@ -81,7 +80,7 @@ def load_biospecimen(path: str = None,
 
 def available_biospecimen(path: str = None) -> List[str]:
     """
-    Lists measures available in :py:func:`~.datasets.load_biospecimen()`
+    Lists measures available in :py:func:`pypmi.load_biospecimen`
 
     Parameters
     ----------
@@ -97,7 +96,7 @@ def available_biospecimen(path: str = None) -> List[str]:
 
     See Also
     --------
-    pypmi.datasets.load_biospecimen
+    pypmi.load_biospecimen
     """
 
     # check for file and get data directory path
@@ -123,7 +122,7 @@ def load_datscan(path: str = None,
     measures : list, optional
         Which measures to keep in the final dataframe. If not specified all
         measures are retained; available DaT scan measures can be viewed with
-        :py:func:`pypmi.datasets.available_datscan()`. Default: None
+        :py:func:`pypmi.available_datscan`. Default: None
 
     Returns
     -------
@@ -132,7 +131,7 @@ def load_datscan(path: str = None,
 
     See Also
     --------
-    pypmi.datasets.available_datscan
+    pypmi.available_datscan
     """
 
     rename_cols = dict(PATNO='participant', EVENT_ID='visit')
@@ -157,7 +156,7 @@ def load_datscan(path: str = None,
             if m not in tidy.columns:
                 raise ValueError('Specified measure {} is not valid. Please '
                                  'see available datscan measures with `pypmi.'
-                                 'datasets.available_datscan()`.'.format(m))
+                                 'available_datscan()`.'.format(m))
         tidy = tidy[['participant', 'visit'] + measures]
 
     # (try to) add visit date information
@@ -168,7 +167,7 @@ def load_datscan(path: str = None,
 
 def available_datscan(path: str = None) -> List[str]:
     """
-    Lists measures available in :py:func:`~.datasets.load_datscan()`
+    Lists measures available in :py:func:`pypmi.load_datscan`
 
     Parameters
     ----------
@@ -184,7 +183,7 @@ def available_datscan(path: str = None) -> List[str]:
 
     See Also
     --------
-    pypmi.datasets.load_datscan
+    pypmi.load_datscan
     """
 
     # check for file and get data directory path
@@ -212,7 +211,7 @@ def load_behavior(path: str = None,
     measures : list, optional
         Which measures to keep in the final dataframe. If not specified all
         measures are retained; available behavioral measures can be viewed with
-        :py:func:`pypmi.datasets.available_behavior()`. Default: None
+        :py:func:`pypmi.available_behavior`. Default: None
 
     Returns
     -------
@@ -221,7 +220,7 @@ def load_behavior(path: str = None,
 
     See Also
     --------
-    pypmi.datasets.available_behavior
+    pypmi.available_behavior
     """
 
     rename_cols = dict(PATNO='participant', EVENT_ID='visit', INFODT='date')
@@ -298,7 +297,7 @@ def load_behavior(path: str = None,
 
 def available_behavior(path: str = None) -> List[str]:
     """
-    Lists measures available in :py:func:`~.datasets.load_behavior()`
+    Lists measures available in :py:func:`pypmi.load_behavior`
 
     Parameters
     ----------
@@ -314,7 +313,7 @@ def available_behavior(path: str = None) -> List[str]:
 
     See Also
     --------
-    pypmi.datasets.load_behavior
+    pypmi.load_behavior
     """
 
     measures = list(BEHAVIORAL_INFO.keys())
@@ -337,7 +336,7 @@ def load_demographics(path: str = None,
     measures : list, optional
         Which measures to keep in the final dataframe. If not specified all
         measures are retained; available demographics measures can be viewed
-        with :py:func:`pypmi.datasets.available_demographics()`. Default: None
+        with :py:func:`pypmi.available_demographics`. Default: None
 
     Returns
     -------
@@ -346,7 +345,7 @@ def load_demographics(path: str = None,
 
     See Also
     --------
-    pypmi.datasets.available_demographics
+    pypmi.available_demographics
     """
 
     rename_cols = dict(PATNO='participant', EVENT_ID='visit')
@@ -394,7 +393,7 @@ def load_demographics(path: str = None,
 
 def available_demographics(path: str = None) -> List[str]:
     """
-    Lists measures available in :py:func:`~.datasets.load_demographics()`
+    Lists measures available in :py:func:`pypmi.load_demographics`
 
     Parameters
     ----------
@@ -410,7 +409,7 @@ def available_demographics(path: str = None) -> List[str]:
 
     See Also
     --------
-    pypmi.datasets.load_demographics
+    pypmi.load_demographics
     """
 
     return list(DEMOGRAPHIC_INFO.keys())
