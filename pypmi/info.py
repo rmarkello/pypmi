@@ -18,7 +18,7 @@ __longdesctype__ = 'text/markdown'
 INSTALL_REQUIRES = [
     'docker',
     'numpy>=0.15',
-    'pandas>=0.21'
+    'pandas>=0.21',
     'requests',
     'scipy',
     'tqdm'
@@ -32,7 +32,7 @@ TESTS_REQUIRE = [
 EXTRAS_REQUIRE = {
     'doc': [
         'sphinx>=1.2',
-        'sphinx_rtd_theme',
+        'sphinx_rtd_theme'
     ],
     'tests': TESTS_REQUIRE,
 }
@@ -52,5 +52,5 @@ CLASSIFIERS = [
     'Intended Audience :: Science/Research',
     'License :: OSI Approved :: BSD License',
     'Programming Language :: Python :: 3.6',
-    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.7'
 ]
