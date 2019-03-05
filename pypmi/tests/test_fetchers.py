@@ -2,7 +2,7 @@
 
 import pytest
 
-from pypmi.datasets import fetchers
+from pypmi import fetchers
 
 
 def test_get_authentication():
