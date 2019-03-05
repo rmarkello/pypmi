@@ -24,7 +24,7 @@ Data, made available on the [PPMI website](https://www.ppmi-info.org/data), incl
 While accessing this data is straightforward (researchers must simply sign a data usage agreement and provide information on the purpose of their research), the sheer amount of data made available can be quite overwhelming to work with.
 Thus, the primary goal of this package is to provide a Python interface to making working with the data provided by the PPMI easier.
 While this project is still very much **under development**, it is neverthless functional!
-Most useful may be the functions contained in `pypmi.datasets`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `pypmi.bids`, which helps convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
+Most useful may be the functions accesible by directly importing `pypmi`, which help wrangle the litany of raw CSV files provided by the PPMI, and in `pypmi.bids`, which helps convert raw neuroimaging data from the PPMI into [BIDS format](bids.neuroimaging.io).
 
 I hope to continue adding useful features to this package as I keep working with the data, but take a look below at [development and getting involved](#development-and-getting-involved) if you're interested in contributing, yourself!
 
@@ -41,26 +41,27 @@ Once you have access to the [PPMI database](https://www.ppmi-info.org/access-dat
 Alternatively, you can use the `pypmi` API to download the data programatically:
 
 ```python
->>> from pypmi import datasets
->>> datasets.fetch_studydata('all', user='username', password='password');
+>>> import pypmi
+>>> pypmi.fetch_studydata('all', user='username', password='password');
 Fetching authentication key for data download...
 Requesting 113 datasets for download...
 Downloading PPMI data: 17.3MB [00:33, 519kB/s]
 ```
 
-By default, the data will be downloaded to your current directory making it easy to load them in the future, but you can optionally provide a `path` argument to `datasets.fetch_studydata()` to specify where you would like the data to go.
+By default, the data will be downloaded to your current directory making it easy to load them in the future, but you can optionally provide a `path` argument to `pypmi.fetch_studydata()` to specify where you would like the data to go.
 (Alternatively, you can set an environmental variable `$PPMI_PATH` to specify where they should be downloaded to; this takes precedence over the current directory.)
 
 Once you have the data downloaded you can load some of it as a [tidy](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html) [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html):
 
 ```python
->>> behavior = datasets.load_behavior()
+>>> behavior = pypmi.load_behavior()
 >>> behavior.columns
-Index(['participant', 'visit', 'benton', 'epworth', 'gds', 'hvlt_recall',
-       'hvlt_recognition', 'hvlt_retention', 'lns', 'moca', 'pigd', 'quip',
-       'rbd', 'scopa_aut', 'se_adl', 'semantic_fluency', 'stai_state',
-       'stai_trait', 'symbol_digit', 'systolic_bp_drop', 'tremor', 'updrs_i',
-       'updrs_ii', 'updrs_iii', 'updrs_iii_a', 'updrs_iv', 'upsit'],
+Index(['participant', 'visit', 'date', 'benton', 'epworth', 'gds',
+       'hvlt_recall', 'hvlt_recognition', 'hvlt_retention', 'lns', 'moca',
+       'pigd', 'quip', 'rbd', 'scopa_aut', 'se_adl', 'semantic_fluency',
+       'stai_state', 'stai_trait', 'symbol_digit', 'systolic_bp_drop',
+       'tremor', 'updrs_i', 'updrs_ii', 'updrs_iii', 'updrs_iii_a', 'updrs_iv',
+       'upsit'],
       dtype='object')
 ```
 
@@ -69,7 +70,7 @@ The call to `pypmi.load_behavior()` may take a few seconds to run&mdash;there's 
 If we want to query the data with regards to diagnosis it might be useful to load in some demographic information:
 
 ```python
->>> demographics = datasets.load_demographics()
+>>> demographics = pypmi.load_demographics()
 >>> demographics.columns
 Index(['participant', 'diagnosis', 'date_birth', 'date_diagnosis',
        'date_enroll', 'status', 'family_history', 'age', 'gender', 'race',

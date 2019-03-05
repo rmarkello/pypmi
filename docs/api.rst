@@ -7,21 +7,18 @@ This is the primary reference of ``pypmi``. Please refer to the :ref:`user
 guide <usage>` for more information on how to best implement these functions in
 your own workflows.
 
-.. contents:: **List of modules**
-   :local:
-
 .. _ref_datasets:
 
-:mod:`pypmi.datasets` - Dataset fetchers and loaders
+:mod:`pypmi` - Dataset fetchers and loaders
 ------------------------------------------------------
 
-.. automodule:: pypmi.datasets
+.. automodule:: pypmi
    :no-members:
    :no-inherited-members:
 
-.. currentmodule:: pypmi.datasets
+.. currentmodule:: pypmi
 
-Functions for downloading datasets from the PPMI database:
+Functions for listing and downloading datasets from the PPMI database:
 
 .. autosummary::
    :template: function.rst
@@ -43,8 +40,8 @@ Functions for loading data from PPMI database into tidy dataframes:
     load_datscan
     load_demographics
 
-Functions for listing measures available from relevant
-``pypmi.datasets.load_X()`` commands:
+Functions for listing measures available from relevant ``pypmi.load_X()``
+commands:
 
 .. autosummary::
    :template: function.rst

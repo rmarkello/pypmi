@@ -2,8 +2,8 @@
 
 .. testsetup::
 
-    from pypmi import datasets
-    datasets.fetch_studydata('all', verbose=False)
+    import pypmi
+    pypmi.fetch_studydata('all', verbose=False)
 
 Usage
 =====
@@ -23,21 +23,21 @@ instructions:
    in the top right hand corner of the page
 5. Unzip the downloaded directory and save it somewhere on your computer
 
-Alternatively, you can use the :py:mod:`pypmi.datasets` module to download the
-data programatically:
+Alternatively, you can use :py:mod:`pypmi` module to download the data
+programatically:
 
 .. doctest::
 
-    >>> from pypmi import datasets
-    >>> files = datasets.fetch_studydata('all', user='username', password='password')  # doctest: +SKIP
+    >>> import pypmi
+    >>> files = pypmi.fetch_studydata('all', user='username', password='password')  # doctest: +SKIP
     Fetching authentication key for data download...
     Requesting 113 datasets for download...
     Downloading PPMI data: 17.3MB [00:33, 519kB/s]
 
 By default, the data will be downloaded to your current directory making it
 easy to load them in the future, but you can optionally provide a ``path``
-argument to :py:func:`.datasets.fetch_studydata` to specify where you would
-like the data to go. (Alternatively, you can set an environmental variable
+argument to :py:func:`pypmi.fetch_studydata` to specify where you would like
+the data to go. (Alternatively, you can set an environmental variable
 ``$PPMI_PATH`` to specify where they should be downloaded to; this takes
 precedence over the current directory.)
 
@@ -52,17 +52,18 @@ For example, we can generate a number of clinical-behavioral measures:
 
 .. doctest::
 
-    >>> behavior = datasets.load_behavior()
+    >>> behavior = pypmi.load_behavior()
     >>> behavior.columns
-    Index(['participant', 'visit', 'benton', 'epworth', 'gds', 'hvlt_recall',
-           'hvlt_recognition', 'hvlt_retention', 'lns', 'moca', 'pigd', 'quip',
-           'rbd', 'scopa_aut', 'se_adl', 'semantic_fluency', 'stai_state',
-           'stai_trait', 'symbol_digit', 'systolic_bp_drop', 'tremor', 'updrs_i',
-           'updrs_ii', 'updrs_iii', 'updrs_iii_a', 'updrs_iv', 'upsit'],
+    Index(['participant', 'visit', 'date', 'benton', 'epworth', 'gds',
+           'hvlt_recall', 'hvlt_recognition', 'hvlt_retention', 'lns', 'moca',
+           'pigd', 'quip', 'rbd', 'scopa_aut', 'se_adl', 'semantic_fluency',
+           'stai_state', 'stai_trait', 'symbol_digit', 'systolic_bp_drop',
+           'tremor', 'updrs_i', 'updrs_ii', 'updrs_iii', 'updrs_iii_a', 'updrs_iv',
+           'upsit'],
           dtype='object')
 
 
-The call to :py:func:`.datasets.load_behavior` may take a few seconds to
+The call to :py:func:`pypmi.load_behavior` may take a few seconds to
 run---there's a lot of data to import and wrangle!
 
 If we want to query the data with regards to, say, subject diagnosis it might
@@ -70,7 +71,7 @@ be useful to load in some demographic information:
 
 .. doctest::
 
-    >>> demographics = datasets.load_demographics()
+    >>> demographics = pypmi.load_demographics()
     >>> demographics.columns
     Index(['participant', 'diagnosis', 'date_birth', 'date_diagnosis',
            'date_enroll', 'status', 'family_history', 'age', 'gender', 'race',
