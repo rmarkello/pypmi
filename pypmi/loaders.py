@@ -149,7 +149,7 @@ def load_datscan(path: str = None,
     # keep only desired measures
     if measures is not None:
         if isinstance(measures, str) and measures == 'all':
-            measures = available_datscan(path=path)
+            measures = available_datscan(path=os.path.dirname(path))
         elif not isinstance(measures, list):
             measures = list(measures)
         for m in measures:
