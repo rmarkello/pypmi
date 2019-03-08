@@ -2,6 +2,12 @@
 
 This package provides a Python interface for working with data from the [Parkinson's Progression Markers Initiative](https://www.ppmi-info.org/) (PPMI).
 
+[![Build Status](https://travis-ci.org/rmarkello/pypmi.svg?branch=master)](https://travis-ci.org/rmarkello/pypmi)
+[![Codecov](https://codecov.io/gh/rmarkello/pypmi/branch/master/graph/badge.svg)](https://codecov.io/gh/rmarkello/pypmi)
+[![Documentation Status](https://readthedocs.org/projects/pypmi/badge/?version=latest)](http://pypmi.readthedocs.io/en/latest/?badge=latest)
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![PyPi](https://img.shields.io/pypi/v/pypmi.svg)](https://pypi.org/project/pypmi/)
+
 ## Installation and setup
 
 This package requires Python >= 3.6.
@@ -46,7 +52,7 @@ Alternatively, you can use the `pypmi` API to download the data programatically:
 ```
 
 By default, the data will be downloaded to your current directory making it easy to load them in the future, but you can optionally provide a `path` argument to `pypmi.fetch_studydata()` to specify where you would like the data to go.
-(Alternatively, you can set an environmental variable `$PPMI_PATH` to specify where they should be downloaded to; this takes precedence over the current directory.)
+(Alternatively, you can set an environmental variable `$PPMI_PATH` to specify where they should be downloaded to; this will be used if `path` is not specified.)
 
 Once you have the data downloaded you can load some of it as a [tidy](https://cran.r-project.org/web/packages/tidyr/vignettes/tidy-data.html) [`pandas.DataFrame`](https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html):
 
@@ -102,12 +108,12 @@ Also be sure to check out the [`pypmi` documentation](https://pypmi.readthedocs.
 ## Development and getting involved
 
 This package has largely been developed in the spare time of a single graduate student ([`@rmarkello`](https://github.com/rmarkello)).
-While it would be :sparkles: amazing :sparkles: if anyone else finds it helpful, given the limited time constraints of graduate school, this package is not currently accepting requests for new features.
+While it would be :sparkles: amazing :sparkles: if anyone else finds it helpful, given the limited time constraints of graduate school this package is not currently accepting requests for new features.
 
 However, if you're interested in getting involved in the project, we're thrilled to welcome new contributors!
-You should start by reading our [contributing guidelines](https://github.com/rmarkello/pyls/blob/master/CONTRIBUTING.md) and [code of conduct](https://github.com/rmarkello/pyls/blob/master/Code_of_Conduct.md).
-Once you're done with that, take a look at our [issues](https://github.com/rmarkello/pyls/issues) to see if there's anything you might like to work on.
-Alternatively, if you've found a bug, are experience a problem, or have a question, create a new issues with some information about it!
+You should start by reading our [contributing guidelines](https://github.com/rmarkello/pypmi/blob/master/CONTRIBUTING.md) and [code of conduct](https://github.com/rmarkello/pypmi/blob/master/CODE_OF_CONDUCT.md).
+Once you're done with that, take a look at our [issues](https://github.com/rmarkello/pypmi/issues) to see if there's anything you might like to work on.
+Alternatively, if you've found a bug, are experiencing a problem, or have a question, create a new issue with some information about it!
 
 ## Acknowledgments
 
