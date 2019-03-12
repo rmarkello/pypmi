@@ -16,7 +16,6 @@ __longdesctype__ = 'text/markdown'
 
 
 INSTALL_REQUIRES = [
-    'docker',
     'numpy>=0.15',
     'pandas>=0.21',
     'requests',
@@ -33,6 +32,9 @@ EXTRAS_REQUIRE = {
     'doc': [
         'sphinx>=1.2',
         'sphinx_rtd_theme'
+    ],
+    'docker': [
+        'docker'
     ],
     'tests': TESTS_REQUIRE,
 }

@@ -5,27 +5,13 @@ import pytest
 from pypmi import fetchers
 
 
-def test_get_authentication():
-    # confirm fetching from environment works
-    try:
-        assert fetchers._get_authentication() is not None
-    except AssertionError:
-        assert False
-
-    # confirm providing only one input still fetches both (from environ)
-    try:
-        assert fetchers._get_authentication(user='user') != ('user', None)
-        assert fetchers._get_authentication(password='pass') != (None, 'pass')
-    except AssertionError:
-        assert False
-
-    # confirm giving both inputs simply returns inputs, as provided
-    assert fetchers._get_authentication('user', 'pass') == ('user', 'pass')
-
-
-def test_get_download_params():
+@pytest.mark.parametrize('url', [
+    "https://utilities.loni.usc.edu/download/study",
+    "https://utilities.loni.usc.edu/download/genetic"
+])
+def test_get_download_params(url):
     # confirm we can retrieve authorization key effectively
-    params = fetchers._get_download_params()
+    params = fetchers._get_download_params(url)
     assert isinstance(params, dict)
     try:
         assert all(f in params.keys() for f in ['authKey', 'userId'])
@@ -33,13 +19,17 @@ def test_get_download_params():
         assert False
 
     # confirm bad user/password returns NO authorization
-    assert fetchers._get_download_params('baduser', 'badpass') is None
+    assert fetchers._get_download_params(url, 'baduser', 'badpass') is None
+
+    # invalid URL raises error
+    with pytest.raises(ValueError):
+        fetchers._get_download_params('invalidurl')
 
 
 def test_fetchable_studydata():
     # 113 datasets available, should get a list of them
-    assert isinstance(fetchers.fetchable_studydata(), list)
-    assert len(fetchers.fetchable_studydata()) == 113
+    dsets = fetchers.fetchable_studydata()
+    assert isinstance(dsets, list) and len(dsets) == 113
 
 
 @pytest.mark.parametrize(('datasets', 'expected'), [
@@ -49,4 +39,22 @@ def test_fetchable_studydata():
 def test_fetch_studydata(studydata, datasets, expected):
     # ensure dataset download returns expected number of files
     out = fetchers.fetch_studydata(*datasets, path=studydata, verbose=False)
+    assert len(out) == expected
+
+
+def test_fetchable_genetics():
+    # 199 datasets available, should get a list of them
+    dsets = fetchers.fetchable_genetics()
+    assert isinstance(dsets, list) and len(dsets) == 199
+
+    # requesting projects will return a shorter list
+    projects = fetchers.fetchable_genetics(projects=True)
+    assert isinstance(projects, list) and len(projects) == 7
+
+
+@pytest.mark.parametrize(('datasets', 'expected'), [
+    (['project 108'], 2)
+])
+def test_fetch_genetics(studydata, datasets, expected):
+    out = fetchers.fetch_genetics(*datasets, path=studydata, verbose=False)
     assert len(out) == expected
