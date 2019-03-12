@@ -67,7 +67,7 @@ def load_biospecimen(path: str = None,
     data = data.query(f'test in {measures}')
 
     # convert to tidy dataframe (if lots of measures this takes a while...)
-    tidy = pd.pivot_table(data, index=['participant', 'visit'],
+    tidy = pd.pivot_table(data, index=['participant', 'visit'], dropna=False,
                           columns='test', values='score').reset_index()
     tidy = tidy.rename_axis(None, axis=1)
 
@@ -103,9 +103,9 @@ def available_biospecimen(path: str = None) -> List[str]:
     fname = 'Current_Biospecimen_Analysis_Results.csv'
     path = os.path.join(_get_data_dir(path=path, fnames=[fname]), fname)
 
-    data = pd.read_csv(path, usecols=['TESTNAME'])
+    data = pd.read_csv(path, usecols=['TESTNAME'])['TESTNAME'].unique()
 
-    return [f.replace(' ', '_').lower() for f in data['TESTNAME'].unique()]
+    return sorted(list(set([f.replace(' ', '_').lower() for f in data])))
 
 
 def load_datscan(path: str = None,
@@ -194,7 +194,7 @@ def available_datscan(path: str = None) -> List[str]:
     with open(path, 'r') as src:
         data = src.readline().strip().replace('"', '').split(',')[2:]
 
-    return [f.lower() for f in data]
+    return sorted([f.lower() for f in data])
 
 
 def load_behavior(path: str = None,
@@ -236,6 +236,9 @@ def load_behavior(path: str = None,
             del beh_info['education']
     else:
         beh_info = BEHAVIORAL_INFO
+
+    if len(beh_info) == 0:
+        return pd.DataFrame(columns=['participant', 'visit', 'date'])
 
     # check for files and get data directory path
     fnames = []
@@ -316,7 +319,7 @@ def available_behavior(path: str = None) -> List[str]:
     pypmi.load_behavior
     """
 
-    measures = list(BEHAVIORAL_INFO.keys())
+    measures = sorted(list(BEHAVIORAL_INFO.keys()) + ['updrs_iii_a'])
     measures.remove('education')
 
     return measures
@@ -453,7 +456,7 @@ def _load_dates(path: str = None,
     ]
     # add additional files as needed by datatype and then get data path
     if fnames is not None:
-        files += fnames
+        files = fnames + files
     path = _get_data_dir(path=path, fnames=files)
 
     # load data and coerce into standard format
