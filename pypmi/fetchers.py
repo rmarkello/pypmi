@@ -22,7 +22,8 @@ with open(resource_filename('pypmi', 'data/genetics.json'), 'r') as src:
     _GENETICS = json.load(src)
 
 
-def _get_download_params(user: str = None,
+def _get_download_params(url,
+                         user: str = None,
                          password: str = None) -> Dict[str, str]:
     """
     Returns credentials for downloading raw study data from the PPMI
@@ -45,6 +46,19 @@ def _get_download_params(user: str = None,
 
     user, password = _get_authentication(user, password)
 
+    # check what page we'll be querying for authentication key based on
+    # supplied URL; currently only 'genetic' and 'study' are accepted...
+    if 'genetic' in url:
+        subPage = 'GENETIC_DATA'
+        study_url = "https://ida.loni.usc.edu/pages/access/geneticData.jsp"
+    elif 'study' in url:
+        subPage = 'STUDY_DATA'
+        study_url = "https://ida.loni.usc.edu/pages/access/studyData.jsp"
+    else:
+        raise ValueError('Cannot parse provided URL {} to authenticate user '
+                         'and password from PPMI database. Please make sure '
+                         'that URL is appropriately formed and try again.')
+
     # make request to main login page; the returned content has the loginKey
     # embedded within so we have to search for and extract it
     login_url = "https://ida.loni.usc.edu/login.jsp?project=PPMI&page=HOME"
@@ -61,9 +75,9 @@ def _get_download_params(user: str = None,
     # once we have the loginKey from the main page, we make another request
     # for the study data page; the returned content will have both the userID
     # and authKey embedded within so we have to search for and extract both
-    study_url = "https://ida.loni.usc.edu/pages/access/studyData.jsp"
+
     params = dict(loginKey=login_key, userEmail=user, project='PPMI',
-                  page='DOWNLOADS', subPage='STUDY_DATA')
+                  page='DOWNLOADS', subPage=subPage)
     with requests.post(study_url, params=params) as study:
         study.raise_for_status()
         try:
@@ -83,7 +97,8 @@ def _download_data(info: Dict[str, Dict[str, str]],
                    user: str = None,
                    password: str = None,
                    overwrite: bool = False,
-                   verbose: bool = True) -> List[str]:
+                   verbose: bool = True,
+                   bundle: bool = True) -> List[str]:
     """
     Downloads dataset(s) listed in `info` from `url`
 
@@ -114,6 +129,9 @@ def _download_data(info: Dict[str, Dict[str, str]],
         exist. Default: False
     verbose : bool, optional
         Whether to print progress bar as download occurs. Default: True
+    bundle : bool, optional
+        Whether to bundle downloads into a single request instead of making
+        individual requests for each dataset. Default: True
 
     Returns
     -------
@@ -121,7 +139,7 @@ def _download_data(info: Dict[str, Dict[str, str]],
         Filepath(s) to downloaded datasets
     """
 
-    params = dict(type='GET_FILES', userId=None, authKey=None, fileId=[])
+    params = dict(type='GET_FILES', userId=None, authKey=None, fileId=None)
     path = _get_data_dir(path)
 
     # check provided credentials; if none were supplied, look for creds in
@@ -130,12 +148,12 @@ def _download_data(info: Dict[str, Dict[str, str]],
         print('Fetching authentication key for data download...')
     user, password = _get_authentication(user, password)
 
-    # gets numerical file IDs from studydata.json and appends the desired ids
-    # to the request parameter dictionary; if the file is already downloaded we
-    # store the filename to return to user
+    # gets numerical file IDs from relevant JSON file; if the file is already
+    # downloaded we store the filename to return to the user
     downloaded = []
     if verbose:
         print('Requesting {} datasets for download...'.format(len(info)))
+    file_ids = []
     for dset, file_info in info.items():
         if file_info is None:
             raise ValueError('Provided dataset {} not available. Please see '
@@ -148,19 +166,19 @@ def _download_data(info: Dict[str, Dict[str, str]],
         # if we don't want to overwrite existing data make sure that file
         # does not exist before appending it to request parameters
         if not os.path.isfile(file_name) or overwrite:
-            params['fileId'].append(file_id)
+            file_ids.append(file_id)
         else:
             downloaded.append(file_name)
 
-    # if we already downloaded all then there's no reason to make requests!
-    if len(params['fileId']) == 0:
+    # if we already downloaded all then there is no reason to make requests!
+    if len(file_ids) == 0:
         return downloaded
 
     # we need to get the authentication key and user id; since neither of these
     # can be obtained from a simple request we have to make nested requests.
     # it's possible that these calls might fail (especially if the provided
     # user and password were supplied incorrectly), so confirm before updating
-    authentication = _get_download_params(user=user, password=password)
+    authentication = _get_download_params(url, user=user, password=password)
     if authentication is None:
         raise ValueError('Provided user and password could not be '
                          'authenticated. Please check inputs and try again. '
@@ -170,50 +188,57 @@ def _download_data(info: Dict[str, Dict[str, str]],
                          'download-data/')
     params.update(authentication)
 
-    # :tada: download the data! :tada:
-    with requests.get(url, params=params, stream=True) as data:
-        data.raise_for_status()
+    # determine whether we're bundling the data (i.e., requesting all files at
+    # once) or peforming separate downloads
+    if bundle:
+        file_ids = [file_ids]
+    for fid in file_ids:
+        params['fileId'] = fid
+        # :tada: download the data! :tada:
+        with requests.get(url, params=params, stream=True) as data:
+            data.raise_for_status()
 
-        # construct progress bar
-        try:
-            total_size = int(data.headers.get('content-length'))
-        except (TypeError, KeyError):
-            total_size = None
-        if verbose:
-            pbar = tqdm(total=total_size, unit='B', unit_scale=True,
-                        desc='Downloading PPMI data')
-        else:
-            pbar = None
+            # construct progress bar
+            try:
+                total_size = int(data.headers.get('content-length'))
+            except (TypeError, KeyError):
+                total_size = None
+            if verbose:
+                pbar = tqdm(total=total_size, unit='B', unit_scale=True,
+                            desc='Fetching data file(s)')
+            else:
+                pbar = None
 
-        # get the actual data! we're saving it to an internal stream so that we
-        # don't have to write to a temporary zipfile if >1 files were requested
-        out, wrote = BytesIO(), 0
-        for chunk in data.iter_content(1024):
-            out.write(chunk)
-            wrote += len(chunk)
+            # get the actual data! we're saving it to an internal stream so
+            # that we don't have to write to a temporary zipfile if >1 files
+            # were requested
+            out, wrote = BytesIO(), 0
+            for chunk in data.iter_content(1024):
+                out.write(chunk)
+                wrote += len(chunk)
+                if pbar is not None:
+                    pbar.update(len(chunk))
+            out.seek(0)
             if pbar is not None:
-                pbar.update(len(chunk))
-        out.seek(0)
-        if pbar is not None:
-            pbar.close()
-        if total_size is not None and total_size != wrote:
-            print('Unable to fetch all requested data ({}/{} bytes received). '
-                  'Downloaded data may be corrupted; use at your own risk.'
-                  .format(wrote, total_size))
+                pbar.close()
+            if total_size is not None and total_size != wrote:
+                print('Unable to fetch all requested data ({}/{} bytes '
+                      'received). Downloaded data may be corrupted; use at '
+                      'your own risk.'.format(wrote, total_size))
 
-        # if we're dealing with a zipfile, extract the contents to `path`
-        if 'zip-compressed' in data.headers.get('Content-Type', ''):
-            with zipfile.ZipFile(out, 'r') as src:
-                src.extractall(path=path)
-                downloaded.extend([os.path.join(path, f.filename) for f in
-                                   src.filelist])
-        # otherwise it should just be a CSV; save it to `path`
-        else:
-            fname = re.search('filename="(.+)"',
-                              data.headers.get('Content-Disposition')).group(1)
-            downloaded = [os.path.join(path, fname)]
-            with open(downloaded[0], 'wb') as dest:
-                dest.write(out.read())
+            # if we're dealing with a zipfile, extract the contents to `path`
+            if 'zip-compressed' in data.headers.get('Content-Type', ''):
+                with zipfile.ZipFile(out, 'r') as src:
+                    src.extractall(path=path)
+                    downloaded.extend([os.path.join(path, f.filename) for f in
+                                       src.filelist])
+            # otherwise it should just be a CSV; save it to `path`
+            else:
+                fname = data.headers.get('Content-Disposition')
+                fname = re.search('filename="(.+)"', fname).group(1)
+                downloaded.extend([os.path.join(path, fname)])
+                with open(downloaded[0], 'wb') as dest:
+                    dest.write(out.read())
 
     return downloaded
 
@@ -260,7 +285,8 @@ def fetchable_genetics(projects: bool = False) -> List[str]:
     """
 
     if projects:
-        return ['project {}'.format(p) for p in [107, 115, 116, 118, 120, 133]]
+        return ['project {}'.format(project)
+                for project in [107, 108, 115, 116, 118, 120, 133]]
     else:
         return list(_GENETICS.keys())
 
@@ -363,6 +389,7 @@ def fetch_genetics(*datasets: str,
     """
 
     url = "https://utilities.loni.usc.edu/download/genetic"
+    datasets = list(datasets)
 
     # take subset of available genetics data based on requested `datasets`
     if 'all' in datasets:
@@ -376,4 +403,4 @@ def fetch_genetics(*datasets: str,
     info = {dset: _GENETICS.get(dset) for dset in datasets}
 
     return _download_data(info, url, path=path, user=user, password=password,
-                          overwrite=overwrite, verbose=verbose)
+                          overwrite=overwrite, verbose=verbose, bundle=False)
