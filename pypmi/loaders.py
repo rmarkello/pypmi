@@ -293,7 +293,8 @@ def load_behavior(path: str = None,
     # coerce data types to desired format
     tidy['participant'] = tidy['participant'].astype(int)
     tidy['visit'] = tidy['visit'].astype(VISITS)
-    tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y')
+    tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y',
+                                  errors='coerce')
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
 
