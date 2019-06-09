@@ -134,8 +134,8 @@ def load_datscan(path: str = None,
     pypmi.available_datscan
     """
 
-    rename_cols = dict(PATNO='participant', EVENT_ID='visit')
-    dtype = dict(PATNO=int, EVENT_ID=VISITS)
+    rename_cols = dict(PATNO='participant', EVENT_ID='visit', SCAN_DATE='date')
+    dtype = dict(PATNO=int, EVENT_ID=VISITS, SCAN_DATE=str)
 
     # check for file and get data directory path
     fname = 'DATScan_Analysis.csv'
@@ -159,8 +159,11 @@ def load_datscan(path: str = None,
                                  'available_datscan()`.'.format(m))
         tidy = tidy[['participant', 'visit'] + measures]
 
-    # (try to) add visit date information
-    tidy = _add_dates(tidy, path=os.path.dirname(path))
+    if 'date' in tidy.columns:
+        tidy['date'] = pd.to_datetime(tidy['date'], format='%Y-%m-%d',
+                                      errors='coerce')
+    else:
+        tidy = _add_dates(tidy, path=os.path.dirname(path))
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
 
@@ -193,6 +196,9 @@ def available_datscan(path: str = None) -> List[str]:
     # only need first line!
     with open(path, 'r') as src:
         data = src.readline().strip().replace('"', '').split(',')[2:]
+
+    if 'SCAN_DATE' in data:
+        data = data[1:]
 
     return sorted([f.lower() for f in data])
 
