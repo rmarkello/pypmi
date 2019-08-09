@@ -10,7 +10,7 @@ import logging
 lgr = logging.getLogger(__name__)
 scaninfo_suffix = '.json'
 
-T1w_SERIES = [
+T1W_SERIES = [
     'MPRAGE 2 ADNI',
     'MPRAGE ADNI',
     'MPRAGE GRAPPA 2',
@@ -60,7 +60,7 @@ T1w_SERIES = [
     'AX T1 SE C+'
 ]
 
-T2w_SERIES = [
+T2W_SERIES = [
     # single echo only
     't2_tse_tra',
     't2 cor',
@@ -177,7 +177,7 @@ DTI_SERIES = [
     'Repeat DTI Sequence'
 ]
 
-T2_or_PDT2_SERIES = [
+T2W_PDT2_SERIES = [
     'Ax T2 FSE',        # only PD/T2                        (48-65 slices)
     '*AX FSE T2',       # mixed T2w and PD/T2               (24-64 slices)
     'AX T2 FSE',        # only T2w (one subject)            (24-24 slices)
@@ -224,9 +224,9 @@ def infotodict(seqinfo):
         revlookup[s.series_id] = s.series_description
 
         # the straightforward scan series
-        if s.series_description in T1w_SERIES:
+        if s.series_description in T1W_SERIES:
             info[t1w].append(s.series_id)
-        elif s.series_description in T2w_SERIES:
+        elif s.series_description in T2W_SERIES:
             info[t2w].append(s.series_id)
         elif s.series_description in PD_SERIES:
             info[pd].append(s.series_id)
@@ -238,13 +238,16 @@ def infotodict(seqinfo):
             info[bold].append(s.series_id)
         elif s.series_description in DTI_SERIES:
             info[dti].append(s.series_id)
-
         # the less straightforward (mixed) series
-        if s.series_description in T2_or_PDT2_SERIES:
+        elif s.series_description in T2W_PDT2_SERIES:
             if s.dim3 < 40:
                 info[t2w].append(s.series_id)
             else:
                 info[pdt2].append(s.series_id)
+        # if we don't match _anything_ then we want to know!
+        else:
+            lgr.warning('Skipping unrecognized series description: {}'
+                        .format(s.series_description))
 
     # if we have multiple t1w runs we want to add an "acq" tag to some of them
     if len(info[t1w]) > 1:
@@ -277,7 +280,7 @@ def custom_callable(*args):
 
     import glob
     import re
-    import dicom as dcm
+    import pydicom as dcm
     import nibabel as nib
     import numpy as np
     from heudiconv.cli.run import get_parser
@@ -328,8 +331,10 @@ def custom_callable(*args):
     # usually, at least two remaining files will exist
     # the main reason this happens with PPMI data is dual-echo sequences
     # look in the json files for EchoTime and generate a key based on that
-    echonums = np.argsort([load_json(json).get('EchoTime')
-                           for (_, json) in bids_pairs]) + 1
+    echonums = [load_json(json).get('EchoTime') for (_, json) in bids_pairs]
+    if all([f is None for f in echonums]):
+        return
+    echonums = np.argsort(echonums) + 1
 
     for echo, (nifti, json) in zip(echonums, bids_pairs):
         # create new prefix with echo specifier
