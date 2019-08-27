@@ -55,7 +55,8 @@ def load_biospecimen(path: str = None,
     path = os.path.join(_get_data_dir(path=path, fnames=[fname]), fname)
 
     # load data, make scores numeric, and clean up test names (no spaces!)
-    data = pd.read_csv(path, dtype=dtype).rename(columns=rename_cols)
+    data = pd.read_csv(path, dtype=dtype, usecols=rename_cols.keys())
+    data = data.rename(columns=rename_cols)
     data['score'] = pd.to_numeric(data['score'], errors='coerce')
     data['test'] = data['test'].apply(lambda x: x.replace(' ', '_').lower())
 
