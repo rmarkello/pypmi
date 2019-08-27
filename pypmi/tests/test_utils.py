@@ -23,6 +23,10 @@ def test_get_authentication():
 
 
 def test_get_data_dir(studydata):
+    ppmi_path = os.environ.get('PPMI_PATH')
+    if ppmi_path is not None:
+        del os.environ['PPMI_PATH']
+
     # no path and $PPMI_PATH not set returns current directory
     assert os.getcwd() == utils._get_data_dir()
     # setting $PPMI_PATH uses that instead of the current directory
@@ -36,3 +40,6 @@ def test_get_data_dir(studydata):
     # providing filename that does not exist at path raises error
     with pytest.raises(FileNotFoundError):
         utils._get_data_dir(studydata, fnames=['notafile.csv'])
+
+    if ppmi_path is not None:
+        os.environ['PPMI_PATH'] = ppmi_path
