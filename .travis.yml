@@ -4,6 +4,10 @@ dist: xenial
 notifications:
   email: change
 
+cache:
+  directories:
+  - $HOME/pypmi-data
+
 python:
   - 3.6
   - 3.7

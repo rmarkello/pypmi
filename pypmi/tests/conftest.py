@@ -6,8 +6,11 @@ import pypmi
 
 
 @pytest.fixture(scope='session')
-def datadir(tmpdir_factory):
-    return tmpdir_factory.mktemp('data')
+def datadir():
+    path = os.path.join(os.environ['HOME'], 'pypmi-data')
+    os.makedirs(path, exist_ok=True)
+    os.environ['PPMI_PATH'] = path
+    return path
 
 
 @pytest.fixture(scope='session')
