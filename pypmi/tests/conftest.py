@@ -7,9 +7,12 @@ import pypmi
 
 @pytest.fixture(scope='session')
 def datadir():
-    path = os.path.join(os.environ['HOME'], 'pypmi-data')
-    os.makedirs(path, exist_ok=True)
-    os.environ['PPMI_PATH'] = path
+    if os.environ.get('PPMI_PATH') is None:
+        path = os.path.join(os.environ['HOME'], 'pypmi-data')
+        os.makedirs(path, exist_ok=True)
+        os.environ['PPMI_PATH'] = path
+    else:
+        path = os.environ['PPMI_PATH']
     return path
 
 
