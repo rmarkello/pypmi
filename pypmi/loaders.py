@@ -55,7 +55,8 @@ def load_biospecimen(path: str = None,
     path = os.path.join(_get_data_dir(path=path, fnames=[fname]), fname)
 
     # load data, make scores numeric, and clean up test names (no spaces!)
-    data = pd.read_csv(path, dtype=dtype).rename(columns=rename_cols)
+    data = pd.read_csv(path, dtype=dtype, usecols=rename_cols.keys())
+    data = data.rename(columns=rename_cols)
     data['score'] = pd.to_numeric(data['score'], errors='coerce')
     data['test'] = data['test'].apply(lambda x: x.replace(' ', '_').lower())
 
@@ -66,10 +67,13 @@ def load_biospecimen(path: str = None,
         measures = data['test'].unique().tolist()
     data = data.query(f'test in {measures}')
 
-    # convert to tidy dataframe (if lots of measures this takes a while...)
-    tidy = pd.pivot_table(data, index=['participant', 'visit'], dropna=False,
-                          columns='test', values='score').reset_index()
-    tidy = tidy.rename_axis(None, axis=1)
+    # convert to tidy dataframe
+    tidy = data.groupby(['participant', 'visit', 'test']) \
+               .agg({'score': np.nanmean}) \
+               .unstack(level='test') \
+               .get('score') \
+               .reset_index() \
+               .rename_axis(None, axis=1)
 
     # (try to) add visit date information
     tidy = _add_dates(tidy, path=os.path.dirname(path),

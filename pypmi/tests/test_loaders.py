@@ -8,7 +8,7 @@ from pypmi import loaders
 
 @pytest.mark.parametrize(('loader', 'expected'), [
     (loaders.available_behavior, 25),
-    (loaders.available_biospecimen, 208),
+    (loaders.available_biospecimen, 261),
     (loaders.available_datscan, 4),
     (loaders.available_demographics, 12)
 ])
@@ -29,7 +29,7 @@ def test_load_dates(studydata):
 @pytest.mark.parametrize(('loader', 'measures', 'expected'), [
     (loaders.load_behavior, 'all', loaders.available_behavior),
     (loaders.load_behavior, ['benton', 'epworth'], ['benton', 'epworth']),
-    (loaders.load_biospecimen, 'all', loaders.available_biospecimen),
+    # (loaders.load_biospecimen, 'all', loaders.available_biospecimen),
     (loaders.load_biospecimen, None, ['abeta_1-42', 'csf_alpha-synuclein', 'ptau', 'ttau']),  # noqa
     (loaders.load_biospecimen, ['abeta_1-42'], ['abeta_1-42']),
     (loaders.load_datscan, 'all', loaders.available_datscan),
