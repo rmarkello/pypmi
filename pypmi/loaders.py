@@ -66,10 +66,13 @@ def load_biospecimen(path: str = None,
         measures = data['test'].unique().tolist()
     data = data.query(f'test in {measures}')
 
-    # convert to tidy dataframe (if lots of measures this takes a while...)
-    tidy = pd.pivot_table(data, index=['participant', 'visit'], dropna=False,
-                          columns='test', values='score').reset_index()
-    tidy = tidy.rename_axis(None, axis=1)
+    # convert to tidy dataframe
+    tidy = data.groupby(['participant', 'visit', 'test']) \
+               .agg({'score': np.nanmean}) \
+               .unstack(level='test') \
+               .get('score') \
+               .reset_index() \
+               .rename_axis(None, axis=1)
 
     # (try to) add visit date information
     tidy = _add_dates(tidy, path=os.path.dirname(path),
