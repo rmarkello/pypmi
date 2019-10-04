@@ -370,6 +370,25 @@ def convert_ppmi(raw_dir: Union[str, PathLike],
         with log_file.open(mode='w', encoding='utf-8') as dest:
             dest.write(ses_logs)
 
+    out_dir = _clean_directory(out_dir)
+
+    return out_dir
+
+
+def _clean_directory(out_dir: Union[str, PathLike]):
+    """
+    Does some final post-processing on the converted data
+
+    Includes merging T1w images that were, for some inexplicable reason, split
+    into two volumes
+
+    Parameters
+    ----------
+    out_dir : str or pathlib.Path
+        Path to output directory where BIDS-format PPMI dataset should be
+        generated
+    """
+
     return out_dir
 
 

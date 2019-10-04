@@ -35,6 +35,7 @@ EXTRAS_REQUIRE = {
     'bids': [
         'docker',
         'nibabel',
+        'pybids>=0.9.3',
         'pydicom>=1.3.0',
     ],
     'tests': TESTS_REQUIRE,
