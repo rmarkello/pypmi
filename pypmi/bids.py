@@ -8,18 +8,21 @@ from os import PathLike
 import pathlib
 from pkg_resources import resource_filename
 from typing import List, Union
-import warnings
 
 import pandas as pd
 
 try:
+    import docker
+    import nibabel as nib
     import pydicom as dcm
-    check_sids = True
 except ImportError:
-    check_sids = False
+    raise ImportError('BIDsification of PPMI data requires the following '
+                      'additional Python packages: docker (or docker-py), '
+                      'nibabel, and pydicom. Please confirm these packages '
+                      'are all installed and try again.')
 
 # get list of sessions that won't convert for whatever reason
-BAD_SCANS = pd.read_csv(resource_filename('pypmi', 'data/sessions.txt'))
+BAD_SCANS = resource_filename('pypmi', 'data/sessions.txt')
 HEURISTIC = resource_filename('pypmi', 'data/heuristic.py')
 
 
@@ -49,6 +52,8 @@ def _prepare_subject(subj_dir: Union[str, PathLike],
         List of paths to data directories where sessions had inconsistent
         study instance UIDs
     """
+
+    bad_scans = pd.read_csv(BAD_SCANS)
 
     # coerce subj_dir to path object
     subj_dir = pathlib.Path(subj_dir).resolve()
@@ -81,13 +86,13 @@ def _prepare_subject(subj_dir: Union[str, PathLike],
                 continue
 
             # if this is a bad scan, move it to `timeout`
-            if scan_type.name in BAD_SCANS.scan.values and timeout is not None:
+            if scan_type.name in bad_scans.scan.values and timeout is not None:
                 dest = timeout / subj_dir.name / ses_dir.name
                 dest.mkdir(parents=True, exist_ok=True)
                 scan_type.rename(dest / scan_type.name)
             # otherwise, move it to the appropriate scan directory
             else:
-                if check_sids and confirm_uids:
+                if confirm_uids:
                     for img in scan_type.glob('*dcm'):
                         img = dcm.read_file(str(img), stop_before_pixels=True)
                         sids.add(img[('0020', '000d')].value)
@@ -100,12 +105,6 @@ def _prepare_subject(subj_dir: Union[str, PathLike],
                 scan_type.parent.rmdir()
 
         if len(sids) > 1:
-            warnings.warn('Session {0} for subject {1} contains scans with '
-                          'conflicting study instance UIDs; may cause BIDS '
-                          'conversion failure. Try running `force_consistent_'
-                          'uids(data_dir=\'{2}\')` to force DICOMs to have '
-                          'identical UIDs before conversion'
-                          .format(n, subj_dir.name, out.parent))
             force.append(out.parent)
 
     # remove empty directories
@@ -183,8 +182,8 @@ def _prepare_directory(data_dir: Union[str, PathLike],
     return subjects, coerce
 
 
-def force_consistent_uids(data_dir: Union[str, PathLike],
-                          target_uid: str = None):
+def _force_consistent_uids(data_dir: Union[str, PathLike],
+                           target_uid: str = None):
     """
     Forces all DICOMs inside `data_dir` to have consistent study instance UID
 
@@ -201,12 +200,6 @@ def force_consistent_uids(data_dir: Union[str, PathLike],
         used instead. Default: None
     """
 
-    if not check_sids:
-        raise ImportError('Pydicom is not available; cannot overwrite DICOM '
-                          'study instance UIDs without pydicom. Either `pip '
-                          'install pydicom` or `conda install pydicom` and'
-                          'try again.')
-
     data_dir = pathlib.Path(data_dir).resolve()
 
     for n, fn in enumerate(data_dir.rglob('*dcm')):
@@ -216,6 +209,56 @@ def force_consistent_uids(data_dir: Union[str, PathLike],
             continue
         img[('0020', '000d')].value = target_uid
         dcm.write_file(str(fn), img)
+
+
+def _clean_directory(out_dir: Union[str, PathLike]):
+    """
+    Does some final post-processing on the converted data
+
+    Includes merging T1w images that were, for some inexplicable reason, split
+    into two volumes
+
+    Parameters
+    ----------
+    out_dir : str or pathlib.Path
+        Path to output directory where BIDS-format PPMI dataset should be
+        generated
+    """
+
+    return out_dir
+
+
+def _merge_3d_t1w(filename: Union[str, PathLike]) -> pathlib.Path:
+    """
+    Merges T1w images that have been split into two volumes
+
+    Parameters
+    ----------
+    filename : str or pathlib.Path
+        Path to T1w image that needs to be merged
+
+    Returns
+    -------
+    filename : pathlib.Path
+        Path to merged T1w image
+    """
+
+    import numpy as np
+
+    filename = pathlib.Path(filename).resolve()
+    img = nib.load(str(filename))
+    if not (len(img.shape) == 4 and img.shape[-1] > 1):
+        return
+
+    # split data along fourth dimension and then concatenate along third
+    imdata = img.get_data()
+    cat = [d.squeeze() for d in np.split(imdata, imdata.shape[-1], axis=-1)]
+    imdata = np.concatenate(cat, axis=-1)
+
+    new_img = img.__class__(imdata, img.affine, img.header)
+    nib.save(new_img, filename)
+
+    return filename
 
 
 def convert_ppmi(raw_dir: Union[str, PathLike],
@@ -307,20 +350,6 @@ def convert_ppmi(raw_dir: Union[str, PathLike],
     ``heudiconv`` and the converted BIDS dataset is stored in `out_dir`.
     """
 
-    try:
-        import docker
-    except ImportError:
-        raise ImportError('Docker-py is not available; cannot convert '
-                          'provided dataset without Docker. Either `pip '
-                          'install docker` or `conda install -c conda-forge '
-                          'docker-py` and try again.')
-
-    if coerce_study_uids and not check_sids:
-        raise ImportError('Pydicom is not available; cannot coerce DICOM '
-                          'study instance UIDs without pydicom. Either `pip '
-                          'install pydicom` or `conda install -c conda-forge '
-                          'pydicom` and try again.')
-
     raw_dir = pathlib.Path(raw_dir).resolve()
     out_dir = pathlib.Path(out_dir).resolve()
 
@@ -333,7 +362,7 @@ def convert_ppmi(raw_dir: Union[str, PathLike],
     # force consistent study UID if desired
     if coerce_study_uids:
         for path in coerce:
-            force_consistent_uids(path)
+            _force_consistent_uids(path)
 
     # get docker client and pull heudiconv image
     client = docker.from_env()
@@ -373,61 +402,3 @@ def convert_ppmi(raw_dir: Union[str, PathLike],
     out_dir = _clean_directory(out_dir)
 
     return out_dir
-
-
-def _clean_directory(out_dir: Union[str, PathLike]):
-    """
-    Does some final post-processing on the converted data
-
-    Includes merging T1w images that were, for some inexplicable reason, split
-    into two volumes
-
-    Parameters
-    ----------
-    out_dir : str or pathlib.Path
-        Path to output directory where BIDS-format PPMI dataset should be
-        generated
-    """
-
-    return out_dir
-
-
-def _merge_3d_t1w(filename: Union[str, PathLike]) -> pathlib.Path:
-    """
-    Merges T1w images that have been split into two volumes
-
-    Parameters
-    ----------
-    filename : str or pathlib.Path
-        Path to T1w image that needs to be merged
-
-    Returns
-    -------
-    filename : pathlib.Path
-        Path to merged T1w image
-    """
-
-    import numpy as np
-
-    try:
-        import nibabel as nib
-    except ImportError:
-        raise ImportError('Nibabel is not available; cannot convert '
-                          'provided dataset without Docker. Either `pip '
-                          'install nibabel` or `conda install -c conda-forge '
-                          'nibabel` and try again.')
-
-    filename = pathlib.Path(filename).resolve()
-    img = nib.load(str(filename))
-    if not (len(img.shape) == 4 and img.shape[-1] > 1):
-        return
-
-    # split data along fourth dimension and then concatenate along third
-    imdata = img.get_data()
-    cat = [d.squeeze() for d in np.split(imdata, imdata.shape[-1], axis=-1)]
-    imdata = np.concatenate(cat, axis=-1)
-
-    new_img = img.__class__(imdata, img.affine, img.header)
-    nib.save(new_img, filename)
-
-    return filename
