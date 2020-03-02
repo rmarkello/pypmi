@@ -30,10 +30,13 @@ TESTS_REQUIRE = [
 EXTRAS_REQUIRE = {
     'doc': [
         'sphinx>=1.2',
-        'sphinx_rtd_theme'
+        'sphinx_rtd_theme',
     ],
-    'docker': [
-        'docker'
+    'bids': [
+        'docker',
+        'nibabel',
+        'pybids>=0.9.3',
+        'pydicom>=1.3.0',
     ],
     'tests': TESTS_REQUIRE,
 }

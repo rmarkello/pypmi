@@ -478,7 +478,8 @@ def _load_dates(path: str = None,
                           .get(list(rename_cols.values()))
                           .dropna()
                           .drop_duplicates(subset=['participant', 'visit']))
-    tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y')
+    tidy['date'] = pd.to_datetime(tidy['date'], format='%m/%Y',
+                                  errors='coerce')
 
     return tidy.sort_values(['participant', 'visit']).reset_index(drop=True)
 

@@ -8,7 +8,7 @@ from pypmi import loaders
 
 @pytest.mark.parametrize(('loader', 'expected'), [
     (loaders.available_behavior, 25),
-    (loaders.available_biospecimen, 261),
+    (loaders.available_biospecimen, 263),
     (loaders.available_datscan, 4),
     (loaders.available_demographics, 12)
 ])
