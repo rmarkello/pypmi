@@ -53,7 +53,7 @@ def cluster_fereshtehnejad2017(data: pd.DataFrame) -> np.ndarray:
     ]
 
     def zavg(data, measures):
-        data = [sstats.zscore(data[m]).mean(axis=1) for m in measures]
+        data = [sstats.zscore(data[m], ddof=1).mean(axis=1) for m in measures]
         return np.mean(data, axis=0)
 
     # load in raw behavioral scores and generate cutoffs
