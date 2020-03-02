@@ -15,11 +15,9 @@ try:
     import docker
     import nibabel as nib
     import pydicom as dcm
+    bids_avail = True
 except ImportError:
-    raise ImportError('BIDsification of PPMI data requires the following '
-                      'additional Python packages: docker (or docker-py), '
-                      'nibabel, and pydicom. Please confirm these packages '
-                      'are all installed and try again.')
+    bids_avail = False
 
 # get list of sessions that won't convert for whatever reason
 BAD_SCANS = resource_filename('pypmi', 'data/sessions.txt')
@@ -349,6 +347,12 @@ def convert_ppmi(raw_dir: Union[str, PathLike],
     Once re-organization is done the resulting directory is processed with
     ``heudiconv`` and the converted BIDS dataset is stored in `out_dir`.
     """
+
+    if not bids_avail:
+        raise ImportError('BIDsification of PPMI data requires the following '
+                          'additional Python packages: docker (or docker-py), '
+                          'nibabel, and pydicom. Please confirm these '
+                          'packages are all installed and try again.')
 
     raw_dir = pathlib.Path(raw_dir).resolve()
     out_dir = pathlib.Path(out_dir).resolve()
