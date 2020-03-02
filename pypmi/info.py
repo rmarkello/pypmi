@@ -19,6 +19,7 @@ INSTALL_REQUIRES = [
     'numpy>=0.15',
     'pandas>=0.21',
     'requests',
+    'scipy',
     'tqdm'
 ]
 
