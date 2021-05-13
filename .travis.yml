@@ -9,8 +9,8 @@ cache:
   - $HOME/pypmi-data
 
 python:
-  - 3.6
   - 3.7
+  - 3.8
 
 env:
   matrix:
@@ -20,16 +20,16 @@ env:
   global:
     - INSTALL_TYPE=setup
     - PPMI_PATH=$HOME/pypmi-data
-    - secure: "YbkwLNR7ggDYU+fnzkDGysSkg9u4Mhr2XkW2gFjQeQHoagemf0/kCQa1tjHBy8DuocdZWvZ8jSoSLix/SIE3RCnc1vvOBk5/+XVCXKH2/KAGC1n+MgNoz2U1CO8dCRNMEvRBbKSYzq6nvs7LCkw8xXfbwpwrEVjSpGJoPTQNmjkYGUlb836gS+pIdbU7jIn586BMYQRA7VZkfy4eS0QSMDQO04BsDeXeaa7qVdGFj+v8fWq4k7nFP4hGJIP8lFpdVmiDVD0f/VQJFI2hgH/s7eav+ViGymLItbmI6P6LK6zIImwL2IrNt/caa1GX+EfCnz5pDOkXxZHFjCepFLIxRjWfMJjSCS684iIt/iK2aCkfoW8jjAwGcjQg7t0BJ1u3ZtrvVUuf+h99jW6mR9ibsF5YatoVtTM9UVCrP0ndHk5/iAocwOO/jBX3iRTZ7LzHIIJwyo+yWGTCKOWtkv8UMqjL5sQnop5LecvzNjFyY6DL6BFlTwFwHGWnfMTQHbn9tD+4YDrgOkmzacvFnHoiq9DWiFuH1cTeK9+wXBMvmWydBWpdRFILO4FI1/G5WDl1IKws7wgT91CEixSLifs7/KZ1I7MU+ldN5HBUe+ki9G5uTURsXhJYVoojbZ3r6nMfOApRgC/tg/32BhJN9zNa604Z4UmTjKq9MLzWwDnSzOE="
-      secure: "Nq1Zfdw65IhRhJtWnsUBzn1HcWL4QmxWbafiQI25XkJUg4Ew/W1AaPtdCqR9wW3TRhwDooUtq7a85RrKtnX0Cq97154AF6Nx3pNyLfkgUP6/vVqApOcndFHkApsauFu21gDlbCHd9NokV7CRasiNLaR8jKRnj7c9aGARx2ZvOnK2D9x7wuRwNID8LJzlNtI4QAf0c+2v8YV2dFab08Lh8vNCkH4j3r/Yxy9BXfAZvbYhYWD0MYEEW9fb5i01w0Jd8U/1Ez8i7XPgYP6HgH1erwGRPA+T+fbcUk2cR07FUtucwEFPzcKBs4CxkE9NqgoC/X1fHe+fKzRILxNJ0tXnITeiR/JwgVEaZPL+KrlFKfd2bkjFfLq0wGiKW+g9VoHzKK+E0L0vs0R7+i5JirJq1qy4LnL8dZHS4Iyj4Dz4rQJ5xMruaeHjf1ZU4XZWYiHPq1vo6JtlBPr1so1zPKHIV8Mrph3qZx7I/Qp0hwXY6zJXggaxIGoxwbZjbX7fSNR0QfMyhpDQBSXsBNiTXd8KsX9tjJqOLWkBBfdaLlsfUQqCMJxkIJrmetJ8JZI8nDli41P7QXRond6d4rHmVc5oRgF5Pcfv6kY5ifu44EYfL+tELT26eai59jTGDrpqer/k1FvfgkItYFuyw1XqAZFmMijkqaCxJNZ/NSesZeQbioY="
+    - secure: "ZDv6uahvC2HlI5UwpFegljzsUiKqMZY5a8+H0GXhRKgJQXfhjTE+CD0bcCHTq9Z+T1+ZC1mapjBnsS1kxNs3g2WR2z8pVvaWEiqaTxG+YYNRnouxhqhprzzyiMyE1KI0xomHBg56Ph6k4s82v53G3ewuxsujIa9Htu+fmmDFubBhPNRKMud+BGMoTxR0ZNv4q9tBHd4ezYpB8jFyb6RvBpvVTsLrYuHU6KZdVK58EARNgxVSdxYAOSiBGMGD7kvV15eXvaiUHPBLbBK8k0L5CMVeFJHfb+j+sLVgRpmIcKGbCPZMs/cMX0BEQCZ/P+/MScL/7w1+CkLMkkRcZ8be+8yBvCij8U05bXprnwroHupeJaSG18y37o6F19sUevTE0YqfAkIkWeoLipazdzeAe+Mgy34J5onGaE4EdyjPtl9aysQpjc7FyqVRWMIb37wF5F+Apl/w4E3moHy9fv1EajnMZbbznaZbV/LUfonoixFIwMxbcR1p7wEw0gco5NiQJk0Dm+n7W6IHsLiWf8OkZvlQI4Ctlt7q45P+WA5kL3AM27zULEA1Gm2DrV2rlEmDDXrnfxePvdXQo/iDhCpmt1e8lUQMByg/C3BOHpWgpSFGgLFefhlhfxg5MJJL2/0AHwwJvJgtGVbYbSnjdTB2l+WQ/EPFyYYXxwA9idZL49s="
+    - secure: "Nq1Zfdw65IhRhJtWnsUBzn1HcWL4QmxWbafiQI25XkJUg4Ew/W1AaPtdCqR9wW3TRhwDooUtq7a85RrKtnX0Cq97154AF6Nx3pNyLfkgUP6/vVqApOcndFHkApsauFu21gDlbCHd9NokV7CRasiNLaR8jKRnj7c9aGARx2ZvOnK2D9x7wuRwNID8LJzlNtI4QAf0c+2v8YV2dFab08Lh8vNCkH4j3r/Yxy9BXfAZvbYhYWD0MYEEW9fb5i01w0Jd8U/1Ez8i7XPgYP6HgH1erwGRPA+T+fbcUk2cR07FUtucwEFPzcKBs4CxkE9NqgoC/X1fHe+fKzRILxNJ0tXnITeiR/JwgVEaZPL+KrlFKfd2bkjFfLq0wGiKW+g9VoHzKK+E0L0vs0R7+i5JirJq1qy4LnL8dZHS4Iyj4Dz4rQJ5xMruaeHjf1ZU4XZWYiHPq1vo6JtlBPr1so1zPKHIV8Mrph3qZx7I/Qp0hwXY6zJXggaxIGoxwbZjbX7fSNR0QfMyhpDQBSXsBNiTXd8KsX9tjJqOLWkBBfdaLlsfUQqCMJxkIJrmetJ8JZI8nDli41P7QXRond6d4rHmVc5oRgF5Pcfv6kY5ifu44EYfL+tELT26eai59jTGDrpqer/k1FvfgkItYFuyw1XqAZFmMijkqaCxJNZ/NSesZeQbioY="
 
 matrix:
   include:
-    - python: 3.6
+    - python: 3.7
       env:
         - INSTALL_TYPE=sdist
         - CHECK_TYPE=test
-    - python: 3.6
+    - python: 3.7
       env:
         - INSTALL_TYPE=wheel
         - CHECK_TYPE=test
