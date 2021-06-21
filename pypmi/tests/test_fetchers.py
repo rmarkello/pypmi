@@ -29,11 +29,11 @@ def test_get_download_params(url):
 def test_fetchable_studydata():
     # 113 datasets available, should get a list of them
     dsets = fetchers.fetchable_studydata()
-    assert isinstance(dsets, list) and len(dsets) == 113
+    assert isinstance(dsets, list) and len(dsets) == 112
 
 
 @pytest.mark.parametrize(('datasets', 'expected'), [
-    (['all'], 113),
+    (['all'], 112),
     (['Code list', 'Clinical labs'], 2)
 ])
 def test_fetch_studydata(studydata, datasets, expected):
