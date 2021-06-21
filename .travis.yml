@@ -42,12 +42,12 @@ before_install:
   - if [ "${CHECK_TYPE}" == "test" ]; then
       pip install "pytest>=3.6" pytest-cov coverage coveralls codecov;
     fi
-  - pip install --upgrade numpy
+  - python -m pip install --upgrade numpy
 
 install:
   - |
     if [ "${INSTALL_TYPE}" == "setup" ]; then
-      pip install .;
+      pip install ./;
     elif [ "${INSTALL_TYPE}" == "sdist" ]; then
       python setup.py sdist;
       pip install dist/*.tar.gz;
