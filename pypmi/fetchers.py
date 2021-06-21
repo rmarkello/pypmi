@@ -97,8 +97,8 @@ def _download_data(info: Dict[str, Dict[str, str]],
                    user: str = None,
                    password: str = None,
                    overwrite: bool = False,
-                   verbose: bool = True,
-                   bundle: bool = True) -> List[str]:
+                   verbose: bool = False,
+                   bundle: bool = False) -> List[str]:
     """
     Downloads dataset(s) listed in `info` from `url`
 
@@ -190,12 +190,14 @@ def _download_data(info: Dict[str, Dict[str, str]],
 
     # determine whether we're bundling the data (i.e., requesting all files at
     # once) or peforming separate downloads
+    headers = {'Referer': 'https://ida.loni.usc.edu/'}
     if bundle:
         file_ids = [file_ids]
     for fid in file_ids:
         params['fileId'] = fid
         # :tada: download the data! :tada:
-        with requests.get(url, params=params, stream=True) as data:
+        with requests.get(url, params=params,
+                          headers=headers, stream=True) as data:
             data.raise_for_status()
 
             # construct progress bar
@@ -237,7 +239,7 @@ def _download_data(info: Dict[str, Dict[str, str]],
                 fname = data.headers.get('Content-Disposition')
                 fname = re.search('filename="(.+)"', fname).group(1)
                 downloaded.extend([os.path.join(path, fname)])
-                with open(downloaded[0], 'wb') as dest:
+                with open(downloaded[-1], 'wb') as dest:
                     dest.write(out.read())
 
     return downloaded
@@ -342,7 +344,7 @@ def fetch_studydata(*datasets: str,
     info = {dset: _STUDYDATA.get(dset) for dset in datasets}
 
     return _download_data(info, url, path=path, user=user, password=password,
-                          overwrite=overwrite, verbose=verbose)
+                          overwrite=overwrite, verbose=verbose, bundle=False)
 
 
 def fetch_genetics(*datasets: str,

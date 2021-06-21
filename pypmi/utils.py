@@ -82,6 +82,7 @@ def _get_data_dir(path: str = None,
     if path is None:
         try:
             path = os.environ['PPMI_PATH']
+            os.makedirs(path, exist_ok=True)
         except KeyError:
             path = os.getcwd()
 
